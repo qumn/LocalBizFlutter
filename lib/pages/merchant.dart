@@ -36,18 +36,20 @@ class MerchantItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var theme = Theme.of(context);
     return Card(
-      child: Container(
-        // color: theme.primaryColorDark,
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(flex: 5, child: _MerchantImage(merchant.img)),
-            const SizedBox(height: 10),
-            Expanded(flex: 2, child: _Description(merchant))
-          ],
-        ),
+      color: theme.colorScheme.surface,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(flex: 5, child: _MerchantImage(merchant.img)),
+          Expanded(
+            flex: 2,
+            child: Container(
+                padding: const EdgeInsets.fromLTRB(8, 5, 8, 0),
+                child: _Description(merchant)),
+          ),
+        ],
       ),
     );
   }
@@ -65,7 +67,7 @@ class _MerchantImage extends StatelessWidget {
         : const AssetImage(defaultMerchantImage) as ImageProvider;
     return Container(
         decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(3)),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
             image: DecorationImage(image: image, fit: BoxFit.cover)));
   }
 }
@@ -79,23 +81,36 @@ class _Description extends StatelessWidget {
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
 
-    var titleStyle = theme.textTheme.titleMedium!
-        .copyWith(color: theme.colorScheme.onSurface);
+    var titleStyle = theme.textTheme.titleMedium!.copyWith(
+        color: theme.colorScheme.onSurface, fontWeight: FontWeight.w500);
     var litleStyle =
         theme.textTheme.bodySmall!.copyWith(color: theme.colorScheme.onSurface);
+    var scoreStyle =
+        theme.textTheme.labelMedium!.copyWith(color: theme.colorScheme.primary);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(merchant.name, style: titleStyle),
-        const SizedBox(height: 2),
-        DefaultTextStyle.merge(
-          style: litleStyle,
-          child: Row(children: [
-            Text("${merchant.score ?? 4.0} 分"),
-            const Text(" | "),
-            Text("月销售 ${merchant.sales ?? 0}"),
-          ]),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(merchant.name, style: titleStyle),
+          Text("月销售 ${merchant.sales ?? 0}", style: litleStyle),
+        ]),
+        Container(
+          // height: 90% of parent
+          height: scoreStyle.fontSize! * 2.5,
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              color: theme.colorScheme.primaryContainer),
+          child: Center(
+            child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Icon(Icons.star,
+                  color: theme.colorScheme.primary,
+                  size: scoreStyle.fontSize! * 2),
+              Text((merchant.score ?? 0.0).toStringAsFixed(1),
+                  style: scoreStyle),
+            ]),
+          ),
         )
       ],
     );
