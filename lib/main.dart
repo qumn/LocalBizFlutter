@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import 'modal/merchant.dart';
-import 'modal/user.dart';
+import 'pages/merchant.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -87,43 +84,6 @@ class AppBody extends StatelessWidget {
   }
 }
 
-class MerchantPage extends StatefulWidget {
-  const MerchantPage({super.key});
-
-  @override
-  State<StatefulWidget> createState() => _MerchantPageState();
-}
-
-class _MerchantPageState extends State<MerchantPage> {
-  late Future<User> futureUser;
-
-  @override
-  void initState() {
-    super.initState();
-    futureUser = fetchUser();
-  }
-
-  Future<User> fetchUser() async {
-    final respose = await http
-        .get(Uri.parse('https://jsonplaceholder.typicode.com/users/1'));
-    if (respose.statusCode == 200) {
-      return User.fromJson(jsonDecode(respose.body));
-    } else {
-      throw Exception('Failed to load album');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    const names = ["zs", "ls", "ww"];
-    var merchantItems = names
-        .map((n) => Merchant(img: "", name: n, desc: "$n's merchant"))
-        .map((m) => MerchantItem(merchant: m))
-        .toList();
-
-    return ListView(children: [...merchantItems]);
-  }
-}
 
 // Bottom Navigation
 typedef OnDestinationSelected = void Function(int idx);
@@ -147,31 +107,5 @@ class BottomNavigation extends StatelessWidget {
         NavigationDestination(icon: Icon(Icons.person), label: '设置'),
       ],
     );
-  }
-}
-
-class MerchantItem extends StatelessWidget {
-  const MerchantItem({super.key, required this.merchant});
-
-  final Merchant merchant;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        height: 96,
-        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-        child: Row(
-          children: [
-            Container(
-                alignment: Alignment.center,
-                child: Image.network(
-                    "https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg",
-                    width: 50,
-                    fit: BoxFit.cover)),
-            Column(
-              children: [Text(merchant.name), Text(merchant.desc)],
-            )
-          ],
-        ));
   }
 }
