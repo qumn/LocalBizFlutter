@@ -1,36 +1,64 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:local_biz/modal/merchant.dart';
+import 'package:go_router/go_router.dart' as go;
+import 'package:local_biz/views/merchat_detail.dart';
 
 const defaultMerchantImage = 'assets/merchant.jpeg';
 
-class MerchantPage extends StatefulWidget {
-  const MerchantPage({super.key});
+class MerchantScreen extends StatefulWidget {
+  const MerchantScreen({super.key});
 
   @override
-  State<StatefulWidget> createState() => _MerchantPageState();
+  State<StatefulWidget> createState() => _MerchantScreenState();
 }
 
-class _MerchantPageState extends State<MerchantPage> {
+class _MerchantScreenState extends State<MerchantScreen> {
   @override
   Widget build(BuildContext context) {
     // TODO: get merchant info from server
     var merchantItems =
-        List.generate(10, (i) => Merchant(name: "茶百道 ${i}th", desc: ""))
+        List.generate(10, (i) => Merchant(mid: i, name: "茶百道 ${i}th", desc: ""))
             .map((m) => MerchantItem(merchant: m));
 
-    return GridView.count(
-      primary: false,
-      padding: const EdgeInsets.all(20),
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      crossAxisCount: 2,
-      children: <Widget>[...merchantItems],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("LocalBiz"),
+        leading: const Icon(Icons.menu),
+        actions: const [
+          Icon(Icons.search),
+        ],
+      ),
+      body: GridView.count(
+        primary: false,
+        padding: const EdgeInsets.all(20),
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        crossAxisCount: 2,
+        children: <Widget>[...merchantItems],
+      ),
     );
   }
 }
 
 class MerchantItem extends StatelessWidget {
   const MerchantItem({super.key, required this.merchant});
+  final Merchant merchant;
+
+  @override
+  Widget build(BuildContext context) {
+    return OpenContainer(
+      closedElevation: 0,
+      closedShape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.zero)),
+      closedBuilder: (context, action) => MerchantCar(merchant: merchant),
+      openBuilder: (context, action) => const MerchantDetailScreen(),
+    );
+  }
+}
+
+class MerchantCar extends StatelessWidget {
+  const MerchantCar({super.key, required this.merchant});
 
   final Merchant merchant;
 

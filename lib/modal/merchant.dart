@@ -5,10 +5,12 @@ part 'merchant.g.dart';
 @JsonSerializable()
 class Merchant {
   Merchant({
+    required this.mid,
     required this.name,
     required this.desc,
   });
 
+  int mid;
   String name;
   String desc;
   String? img;
