@@ -12,11 +12,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:local_biz/main.dart';
 import 'package:local_biz/api/merchant.dart' as MerchantClient;
+import 'package:local_biz/api/login.dart' as login;
 
 void main() {
   test("dio get test", () async {
-    var merchant = await MerchantClient.getAll();
-    print(merchant);
+    const uuid = 'ea1e42b1085a44edaec9962795aa74cd';
+    final token = await login.login('zs', 'zs123', uuid, '8');
+    print(token);
   });
   // testWidgets('Counter increments smoke test', (WidgetTester tester) async {
   //   // Build our app and trigger a frame.

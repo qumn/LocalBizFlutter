@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:local_biz/root_layout.dart';
-import 'package:local_biz/views/merchat_detail.dart';
+import 'package:local_biz/views/login.dart';
 
 import 'views/merchant.dart';
 
@@ -43,6 +43,14 @@ class NavigationDestination {
 final appRouter = GoRouter(
   initialLocation: '/merchant',
   routes: [
+    // loginScreen
+    GoRoute(
+      path: '/login',
+      pageBuilder: (context, state) =>
+          MaterialPage<void>(key: _pageKey, child: LoginScreen()),
+      // child: RootLayout(
+      //     key: _scaffoldKey, currentIndex: 0, child: LoginScreen())),
+    ),
     // MerchantScreen
     GoRoute(
       path: '/merchant',
@@ -51,23 +59,6 @@ final appRouter = GoRouter(
         child: RootLayout(
             key: _scaffoldKey, currentIndex: 0, child: MerchantScreen()),
       ),
-      routes: [
-        GoRoute(
-          path: ':mid',
-          pageBuilder: (context, state) => MaterialPage<void>(
-            key: state.pageKey,
-            child: const RootLayout(
-              key: _scaffoldKey,
-              currentIndex: 0,
-              child: MerchantDetailScreen()
-            ),
-          ),
-          // builder: (context, state) => ArtistScreen(
-          //   id: state.params['aid']!,
-          // ),
-        ),
-      ],
-
     ),
     GoRoute(
         path: '/shopping_cart',

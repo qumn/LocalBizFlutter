@@ -1,7 +1,9 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:local_biz/log.dart';
 import 'package:local_biz/modal/merchant.dart';
 import 'package:go_router/go_router.dart' as go;
+import 'package:local_biz/persistent/persistent.dart';
 import 'package:local_biz/views/merchat_detail.dart';
 
 const defaultMerchantImage = 'assets/merchant.jpeg';
@@ -20,13 +22,23 @@ class _MerchantScreenState extends State<MerchantScreen> {
     var merchantItems =
         List.generate(10, (i) => Merchant(mid: i, name: "茶百道 ${i}th", desc: ""))
             .map((m) => MerchantItem(merchant: m));
+    getToken().then((t) {
+      if (t == null) {
+        go.GoRouter.of(context).go("/login");
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("LocalBiz"),
         leading: const Icon(Icons.menu),
-        actions: const [
-          Icon(Icons.search),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.login),
+            onPressed: () {
+              go.GoRouter.of(context).go('/login');
+            },
+          )
         ],
       ),
       body: GridView.count(
