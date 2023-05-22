@@ -1,17 +1,37 @@
-import 'dart:math';
-
 import 'package:dio/dio.dart';
 import 'package:local_biz/persistent/persistent.dart';
 
 import '../config.dart';
 
+class PageParam {
+  final int num;
+  final int size;
+  const PageParam({this.num = 1, this.size = 10});
+}
+
+Future<Response<T>> get<T>(String path,
+    {PageParam? page, Map<String, dynamic>? param}) async {
+  param ??= {};
+  if (page != null) {
+    param['pageNum'] = page.num;
+    param['pageSize'] = page.size;
+  }
+  return await dio.get(path, queryParameters: param);
+}
+
 final dio = Dio(
   BaseOptions(
     baseUrl: backendUrl,
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'User-Agent': 'LocalBizMobile/1.0.0'
+    },
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 3),
   ),
-)..interceptors.add(
+)
+  ..interceptors.add(
     InterceptorsWrapper(onResponse: (rsp, handler) {
       if (rsp.data['data'] != null) {
         rsp.data = rsp.data['data'];
@@ -28,4 +48,5 @@ final dio = Dio(
       // TODO: handler 401 unauthorized, go to login page
       return handler.next(e);
     }),
-  );
+  )
+  ..interceptors.add(LogInterceptor(requestBody: true, responseBody: true));

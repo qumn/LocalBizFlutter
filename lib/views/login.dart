@@ -14,22 +14,11 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _unameController = TextEditingController();
   final TextEditingController _pwdController = TextEditingController();
-  final TextEditingController _codeController = TextEditingController();
   final GlobalKey _formKey = GlobalKey<FormState>();
-
-  Code? _code;
 
   @override
   void initState() {
-    _getCode();
     super.initState();
-  }
-
-  Future<void> _getCode() async {
-    final code = await fetchCode();
-    setState(() {
-      _code = code;
-    });
   }
 
   @override
@@ -65,25 +54,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   return v!.trim().isNotEmpty ? null : "密码不能为空";
                 },
               ),
-              const SizedBox(
-                height: 30,
-              ),
-              Row(children: [
-                SizedBox(
-                  width: 200,
-                  height: 60,
-                  child: _code != null
-                      ? GestureDetector(
-                          onTap: () async {
-                            await _getCode();
-                          },
-                          child: Image.memory(base64Decode(_code!.code)))
-                      : const Center(child: CircularProgressIndicator()),
-                ),
-              ]),
-              TextFormField(
-                controller: _codeController,
-              ),
               Padding(
                 padding: const EdgeInsets.only(top: 28.0),
                 child: Row(
@@ -101,9 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           if ((_formKey.currentState as FormState).validate()) {
                             final username = _unameController.text;
                             final password = _pwdController.text;
-                            final uuid = _code!.uuid;
-                            final code = _codeController.text;
-                            login(username, password, uuid, code).then((uuid) {
+                            login(username, password).then((uuid) {
                               if (uuid == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('密码错误, 请重试')));
