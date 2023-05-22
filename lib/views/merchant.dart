@@ -4,7 +4,7 @@ import 'package:local_biz/api/index.dart';
 import 'package:local_biz/config.dart';
 import 'package:local_biz/modal/merchant.dart';
 import 'package:go_router/go_router.dart' as go;
-import 'package:local_biz/persistent/persistent.dart';
+import 'package:local_biz/utils/img_url.dart';
 import 'package:local_biz/views/merchat_detail.dart';
 import 'package:local_biz/api/merchant.dart' as merchantApi;
 
@@ -117,7 +117,7 @@ class _MerchantImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ImageProvider image = img != null
-        ? NetworkImage(img!)
+        ? NetworkImage(getImgUrl(img!))
         : const AssetImage(defaultMerchantImage) as ImageProvider;
     return Container(
         decoration: BoxDecoration(
