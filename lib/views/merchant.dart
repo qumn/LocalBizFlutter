@@ -78,7 +78,7 @@ class MerchantItem extends StatelessWidget {
       closedShape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.zero)),
       closedBuilder: (context, action) => MerchantCar(merchant: merchant),
-      openBuilder: (context, action) => const MerchantDetailScreen(),
+      openBuilder: (context, action) => ShopPage(merchant: merchant),
     );
   }
 }
