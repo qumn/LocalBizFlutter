@@ -97,14 +97,10 @@ class ShopScrollController extends ScrollController {
       _positions.isNotEmpty,
       'ScrollController not attached to any scroll views.',
     );
-    final List<Future<void>> animations = List.generate(
-        _positions.length,
-        (index) => _positions[index].animateTo(
-              offset,
-              duration: duration,
-              curve: curve,
-            ));
-    return Future.wait<void>(animations).then<void>((List<void> _) => null);
+    final List<Future<void>> animations = List.generate(_positions.length,
+      (i) => _positions[i].animateTo(offset, duration: duration, curve: curve),
+    );
+    return Future.wait<void>(animations);
   }
 
   /// 将滚动位置从其当前值跳转到给定值，而不进行动画处理，也无需检查新值是否在范围内。
@@ -118,10 +114,8 @@ class ShopScrollController extends ScrollController {
       _positions.isNotEmpty,
       'ScrollController not attached to any scroll views.',
     );
-    for (final ScrollPosition position
-        in List<ScrollPosition>.from(_positions)) {
+    for (final ScrollPosition position in List<ScrollPosition>.from(_positions))
       position.jumpTo(value);
-    }
   }
 
   /// 在此控制器上注册给定位置。
@@ -144,9 +138,8 @@ class ShopScrollController extends ScrollController {
 
   @override
   void dispose() {
-    for (final ScrollPosition position in _positions) {
+    for (final ScrollPosition position in _positions)
       position.removeListener(notifyListeners);
-    }
     super.dispose();
   }
 
@@ -204,10 +197,9 @@ class ShopScrollController extends ScrollController {
     if (debugLabel != null) {
       description.add(debugLabel!);
     }
-    if (initialScrollOffset != 0.0) {
+    if (initialScrollOffset != 0.0)
       description.add(
           'initialScrollOffset: ${initialScrollOffset.toStringAsFixed(1)}, ');
-    }
     if (_positions.isEmpty) {
       description.add('no clients');
     } else if (_positions.length == 1) {

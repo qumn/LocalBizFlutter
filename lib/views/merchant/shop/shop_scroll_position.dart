@@ -26,7 +26,7 @@ class ShopScrollPosition extends ScrollPosition
           debugLabel: debugLabel,
         ) {
     // 如果oldPosition不为null，则父级将首先调用Absorb()，它可以设置_pixels和_activity.
-    correctPixels(initialPixels);
+    if (!hasPixels) correctPixels(initialPixels);
     if (activity == null) {
       goIdle();
     }
@@ -42,7 +42,7 @@ class ShopScrollPosition extends ScrollPosition
 
   @override
   double setPixels(double newPixels) {
-    //assert(activity!.isScrolling);
+    assert(activity!.isScrolling);
     return super.setPixels(newPixels);
   }
 
@@ -53,13 +53,15 @@ class ShopScrollPosition extends ScrollPosition
       goIdle();
       return;
     }
-    activity?.updateDelegate(this);
+    activity!.updateDelegate(this);
     final ShopScrollPosition typedOther = other;
     _userScrollDirection = typedOther._userScrollDirection;
     assert(_currentDrag == null);
-    _currentDrag = typedOther._currentDrag;
-    _currentDrag?.updateDelegate(this);
-    typedOther._currentDrag = null;
+    if (typedOther._currentDrag != null) {
+      _currentDrag = typedOther._currentDrag;
+      _currentDrag!.updateDelegate(this);
+      typedOther._currentDrag = null;
+    }
   }
 
   @override
@@ -149,7 +151,7 @@ class ShopScrollPosition extends ScrollPosition
     super.beginActivity(newActivity);
     _currentDrag?.dispose();
     _currentDrag = null;
-    if (!(activity != null ? activity!.isScrolling : false)) {
+    if (!activity!.isScrolling) {
       updateUserScrollDirection(ScrollDirection.idle);
     }
   }
@@ -216,11 +218,11 @@ class ShopScrollPosition extends ScrollPosition
         return;
       }
     }
+    assert(hasPixels);
     final Simulation? simulation =
         physics.createBallisticSimulation(this, velocity);
     if (simulation != null) {
-      beginActivity(
-          BallisticScrollActivity(this, simulation, context.vsync, true));
+      beginActivity(BallisticScrollActivity(this, simulation, context.vsync, true));
     } else {
       goIdle();
     }
@@ -229,10 +231,9 @@ class ShopScrollPosition extends ScrollPosition
   @override
   bool applyContentDimensions(double minScrollExtent, double maxScrollExtent,
       [bool fromCoordinator = false]) {
-    if (debugLabel == coordinator.pageLabel && !fromCoordinator) {
+    if (debugLabel == coordinator.pageLabel && !fromCoordinator)
       return coordinator.applyContentDimensions(
           minScrollExtent, maxScrollExtent, this);
-    }
     return super.applyContentDimensions(minScrollExtent, maxScrollExtent);
   }
 
@@ -308,8 +309,23 @@ class ShopScrollPosition extends ScrollPosition
     description.add('$userScrollDirection');
   }
 
+  /// 触控板手势
   @override
   void pointerScroll(double delta) {
-    // TODO: implement pointerScroll
+    assert(delta != 0.0);
+
+    final double targetPixels =
+        math.min(math.max(pixels + delta, minScrollExtent), maxScrollExtent);
+    if (targetPixels != pixels) {
+      goIdle();
+      updateUserScrollDirection(
+          -delta > 0.0 ? ScrollDirection.forward : ScrollDirection.reverse);
+      final double oldPixels = pixels;
+      forcePixels(targetPixels);
+      didStartScroll();
+      didUpdateScrollPositionBy(pixels - oldPixels);
+      didEndScroll();
+      goBallistic(0.0);
+    }
   }
 }

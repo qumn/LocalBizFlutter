@@ -84,7 +84,7 @@ class ShopPage extends StatefulWidget {
   final Merchant merchant;
 
   @override
-  _ShopPageState createState() => _ShopPageState();
+  State<ShopPage> createState() => _ShopPageState();
 }
 
 class _ShopPageState extends State<ShopPage>

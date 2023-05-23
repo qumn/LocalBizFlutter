@@ -13,15 +13,15 @@ enum PageExpandState { NotExpand, Expanding, Expanded }
 class ShopScrollCoordinator {
   final String pageLabel = 'page';
 
-  ShopScrollController? _pageScrollController;
+  late ShopScrollController _pageScrollController;
   double Function()? pinnedHeaderSliverHeightBuilder;
 
-  ShopScrollPosition get _pageScrollPosition => _pageScrollController!.position;
+  ShopScrollPosition get _pageScrollPosition => _pageScrollController.position;
 
   ScrollDragController? scrollDragController;
 
   /// 主页面滑动部件默认位置
-  double? _pageInitialOffset;
+  late double _pageInitialOffset;
 
   /// 获取主页面滑动控制器
   ShopScrollController pageScrollController([double initialOffset = 0.0]) {
@@ -32,7 +32,7 @@ class ShopScrollCoordinator {
       debugLabel: pageLabel,
       initialScrollOffset: initialOffset,
     );
-    return _pageScrollController!;
+    return _pageScrollController;
   }
 
   /// 创建并获取一个子滑动控制器
@@ -86,9 +86,9 @@ class ShopScrollCoordinator {
   /// 当手指离开屏幕
   void onPointerUp(PointerUpEvent event) {
     final double _pagePixels = _pageScrollPosition.pixels;
-    if (0.0 < _pagePixels && _pagePixels < _pageInitialOffset!) {
+    if (0.0 < _pagePixels && _pagePixels < _pageInitialOffset) {
       if (pageExpand == PageExpandState.NotExpand &&
-          _pageInitialOffset! - _pagePixels > _scrollRedundancy) {
+          _pageInitialOffset - _pagePixels > _scrollRedundancy) {
         _pageScrollPosition
             .animateTo(
               0.0,
@@ -100,7 +100,7 @@ class ShopScrollCoordinator {
         pageExpand = PageExpandState.Expanding;
         _pageScrollPosition
             .animateTo(
-              _pageInitialOffset!,
+              _pageInitialOffset,
               duration: const Duration(milliseconds: 400),
               curve: Curves.ease,
             )
@@ -112,7 +112,6 @@ class ShopScrollCoordinator {
   /// 更新用户滑动方向
   void updateUserScrollDirection(
       ShopScrollPosition position, ScrollDirection value) {
-    assert(position != null && value != null);
     position.didUpdateScrollDirection(value);
   }
 
