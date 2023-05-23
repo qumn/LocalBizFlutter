@@ -2,11 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:local_biz/modal/merchant.dart';
-import 'package:local_biz/views/page1.dart';
-import 'package:local_biz/views/page2.dart';
-import 'package:local_biz/views/page3.dart';
-import 'package:local_biz/views/shop/shop_scroll_controller.dart';
-import 'package:local_biz/views/shop/shop_scroll_coordinator.dart';
+import './page1.dart';
+import './page2.dart';
+import './page3.dart';
+import './shop/shop_scroll_controller.dart';
+import './shop/shop_scroll_coordinator.dart';
 
 const defaultMerchantImage = 'assets/merchant.jpeg';
 
@@ -127,11 +127,11 @@ class _ShopPageState extends State<ShopPage>
         onPointerUp: _shopCoordinator.onPointerUp,
         child: CustomScrollView(
           controller: _pageScrollController,
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           slivers: <Widget>[
             SliverAppBar(
               pinned: true,
-              title: Text("店铺首页", style: TextStyle(color: Colors.white)),
+              title: const Text("店铺首页", style: TextStyle(color: Colors.white)),
               backgroundColor: Colors.blue,
               expandedHeight: _sliverAppBarMaxHeight,
             ),
@@ -141,7 +141,7 @@ class _ShopPageState extends State<ShopPage>
               delegate: _SliverAppBarDelegate(
                 maxHeight: 100,
                 minHeight: 100,
-                child: Center(child: Text("我是活动Header")),
+                child: const Center(child: Text("我是活动Header")),
               ),
             ),
             SliverPersistentHeader(
@@ -155,7 +155,7 @@ class _ShopPageState extends State<ShopPage>
                   child: TabBar(
                     labelColor: Colors.black,
                     controller: _tabController,
-                    tabs: <Widget>[
+                    tabs: const <Widget>[
                       Tab(text: "商品"),
                       Tab(text: "评价"),
                       Tab(text: "商家"),
@@ -182,7 +182,7 @@ class _ShopPageState extends State<ShopPage>
 
   @override
   void dispose() {
-    _tabController?.dispose();
+    _tabController.dispose();
     _pageScrollController?.dispose();
     super.dispose();
   }

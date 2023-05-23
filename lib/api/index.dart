@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:local_biz/log.dart';
 import 'package:local_biz/persistent/persistent.dart';
+import 'package:logger/logger.dart';
 
 import '../config.dart';
 
@@ -45,6 +47,10 @@ final dio = Dio(
       options.headers['Authorization'] = 'Bearer $token';
       return handler.next(options);
     }, onError: (e, handler) {
+      if (e.response?.statusCode == 401) {
+        // go to login page
+        logger.e("401 unauthorized");
+      }
       // TODO: handler 401 unauthorized, go to login page
       return handler.next(e);
     }),

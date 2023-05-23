@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:local_biz/root_layout.dart';
 import 'package:local_biz/views/login.dart';
 
-import 'views/merchant.dart';
+import 'views/merchant/merchant.dart';
 
 const _pageKey = ValueKey('_pageKey');
 const _scaffoldKey = ValueKey('_scaffoldKey');
