@@ -1,14 +1,13 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:local_biz/api/index.dart';
+import 'package:local_biz/component/image.dart';
 import 'package:local_biz/config.dart';
 import 'package:local_biz/modal/merchant.dart';
 import 'package:go_router/go_router.dart' as go;
 import 'package:local_biz/utils/img_url.dart';
 import './merchant_detail.dart';
 import 'package:local_biz/api/merchant.dart' as merchantApi;
-
-const defaultMerchantImage = 'assets/merchant.jpeg';
 
 class MerchantScreen extends StatefulWidget {
   const MerchantScreen({super.key});
@@ -27,9 +26,10 @@ class _MerchantScreenState extends State<MerchantScreen> {
   }
 
   void _retrieve() async {
-    var merchants = await merchantApi.getAll(
+    var merchants = await merchantApi.fetchAll(
         page: PageParam(
-            num: (_merchants.length ~/ defaultPageSize) + 1, size: defaultPageSize));
+            num: (_merchants.length ~/ defaultPageSize) + 1,
+            size: defaultPageSize));
     setState(() {
       _merchants.addAll(merchants);
     });
@@ -116,13 +116,8 @@ class _MerchantImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ImageProvider image = img != null
-        ? NetworkImage(getImgUrl(img!))
-        : const AssetImage(defaultMerchantImage) as ImageProvider;
-    return Container(
-        decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-            image: DecorationImage(image: image, fit: BoxFit.cover)));
+    return LbImage(
+        imgUrl: img, defaultImage: const AssetImage(defaultMerchantImage));
   }
 }
 
@@ -147,8 +142,10 @@ class _Description extends StatelessWidget {
       children: [
         Expanded(
           flex: 7,
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(merchant.name, overflow: TextOverflow.ellipsis, style: titleStyle),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(merchant.name,
+                overflow: TextOverflow.ellipsis, style: titleStyle),
             Text("月销售 ${merchant.sales ?? 0}", style: litleStyle),
           ]),
         ),

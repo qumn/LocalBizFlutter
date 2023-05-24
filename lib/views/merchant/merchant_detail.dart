@@ -1,15 +1,18 @@
 import 'dart:math';
+// q: how to use iterae exteision
 
 import 'package:flutter/material.dart';
+import 'package:local_biz/config.dart';
+import 'package:local_biz/modal/commodity.dart';
 import 'package:local_biz/modal/merchant.dart';
 import 'package:local_biz/utils/img_url.dart';
-import './page1.dart';
+
+import './commodities.dart';
 import './page2.dart';
 import './page3.dart';
 import './shop/shop_scroll_controller.dart';
 import './shop/shop_scroll_coordinator.dart';
 
-const defaultMerchantImage = 'assets/merchant.jpeg';
 
 class MerchantDetailScreen extends StatefulWidget {
   const MerchantDetailScreen({super.key, required this.merchant});
@@ -100,16 +103,21 @@ class _ShopPageState extends State<ShopPage>
   final double _sliverAppBarInitHeight = 200;
   final double _tabBarHeight = 50;
   final double _sliverAppBarMaxHeight = 300;
+  late final Merchant merchant;
+  List<Commodity> commodities = [];
+  Map<int, List<Commodity>> _catId2Commodities = {};
 
   MediaQueryData? mediaQuery;
   double? statusBarHeight;
 
   @override
   void initState() {
+    merchant = widget.merchant;
     super.initState();
     _shopCoordinator = ShopScrollCoordinator();
     _tabController = TabController(vsync: this, length: 3);
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +125,6 @@ class _ShopPageState extends State<ShopPage>
     var textTheme = theme.textTheme;
     var titleStyle =
         textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w500);
-    final merchant = widget.merchant;
     mediaQuery ??= MediaQuery.of(context);
     statusBarHeight ??= mediaQuery?.padding.top;
 
@@ -137,7 +144,8 @@ class _ShopPageState extends State<ShopPage>
           slivers: <Widget>[
             SliverAppBar(
               pinned: true,
-              title: InvisibleExpandedHeader( // only show in collaspe mode
+              title: InvisibleExpandedHeader(
+                  // only show in collaspe mode
                   child: Text(merchant.name, style: titleStyle)),
               backgroundColor: theme.colorScheme.tertiaryContainer,
               expandedHeight: _sliverAppBarMaxHeight,
@@ -172,7 +180,9 @@ class _ShopPageState extends State<ShopPage>
               child: TabBarView(
                 controller: _tabController,
                 children: <Widget>[
-                  Page1(shopCoordinator: _shopCoordinator),
+                  CommodityWithCategoryList(
+                      shopCoordinator: _shopCoordinator,
+                      merchant: merchant),
                   Page2(shopCoordinator: _shopCoordinator),
                   const Page3(),
                 ],
