@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:local_biz/modal/merchant.dart';
+import 'package:local_biz/utils/img_url.dart';
 import './page1.dart';
 import './page2.dart';
 import './page3.dart';
@@ -37,7 +38,8 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen>
           return <Widget>[
             SliverAppBar(
               pinned: true,
-              title: const Text("首页", style: TextStyle(color: Colors.black)),
+              title: const InvisibleExpandedHeader(
+                  child: Text("首页", style: TextStyle(color: Colors.black))),
               backgroundColor: Colors.transparent,
               bottom: TabBar(
                 controller: _tabController,
@@ -97,9 +99,9 @@ class _ShopPageState extends State<ShopPage>
 
   final double _sliverAppBarInitHeight = 200;
   final double _tabBarHeight = 50;
-  double? _sliverAppBarMaxHeight;
+  final double _sliverAppBarMaxHeight = 300;
+
   MediaQueryData? mediaQuery;
-  double? screenHeight;
   double? statusBarHeight;
 
   @override
@@ -111,17 +113,21 @@ class _ShopPageState extends State<ShopPage>
 
   @override
   Widget build(BuildContext context) {
+    var theme = Theme.of(context);
+    var textTheme = theme.textTheme;
+    var titleStyle =
+        textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w500);
+    final merchant = widget.merchant;
     mediaQuery ??= MediaQuery.of(context);
-    screenHeight ??= mediaQuery?.size.height;
     statusBarHeight ??= mediaQuery?.padding.top;
 
-    _sliverAppBarMaxHeight ??= screenHeight!;
     _pageScrollController ??= _shopCoordinator
-        .pageScrollController(_sliverAppBarMaxHeight! - _sliverAppBarInitHeight);
+        .pageScrollController(_sliverAppBarMaxHeight - _sliverAppBarInitHeight);
 
     _shopCoordinator.pinnedHeaderSliverHeightBuilder ??= () {
       return statusBarHeight! + kToolbarHeight + _tabBarHeight;
     };
+
     return Scaffold(
       body: Listener(
         onPointerUp: _shopCoordinator.onPointerUp,
@@ -131,18 +137,16 @@ class _ShopPageState extends State<ShopPage>
           slivers: <Widget>[
             SliverAppBar(
               pinned: true,
-              title: const Text("店铺首页", style: TextStyle(color: Colors.white)),
-              backgroundColor: Colors.blue,
+              title: InvisibleExpandedHeader( // only show in collaspe mode
+                  child: Text(merchant.name, style: titleStyle)),
+              backgroundColor: theme.colorScheme.tertiaryContainer,
               expandedHeight: _sliverAppBarMaxHeight,
-            ),
-            SliverPersistentHeader(
-              pinned: false,
-              floating: true,
-              delegate: _SliverAppBarDelegate(
-                maxHeight: 100,
-                minHeight: 100,
-                child: const Center(child: Text("我是活动Header")),
-              ),
+              flexibleSpace: FlexibleSpaceBar(
+                  centerTitle: true,
+                  background: Image.network(
+                      getImgUrl(
+                          widget.merchant.introImg ?? defaultMerchantImage),
+                      fit: BoxFit.cover)),
             ),
             SliverPersistentHeader(
               pinned: true,
@@ -170,7 +174,7 @@ class _ShopPageState extends State<ShopPage>
                 children: <Widget>[
                   Page1(shopCoordinator: _shopCoordinator),
                   Page2(shopCoordinator: _shopCoordinator),
-                  Page3(),
+                  const Page3(),
                 ],
               ),
             )
@@ -216,5 +220,64 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     return maxHeight != oldDelegate.maxHeight ||
         minHeight != oldDelegate.minHeight ||
         child != oldDelegate.child;
+  }
+}
+
+class InvisibleExpandedHeader extends StatefulWidget {
+  final Widget child;
+  const InvisibleExpandedHeader({
+    super.key,
+    required this.child,
+  });
+  @override
+  State<InvisibleExpandedHeader> createState() =>
+      _InvisibleExpandedHeaderState();
+}
+
+class _InvisibleExpandedHeaderState extends State<InvisibleExpandedHeader> {
+  ScrollPosition? _position;
+  bool? _visible;
+
+  @override
+  void dispose() {
+    _removeListener();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _removeListener();
+    _addListener();
+  }
+
+  void _addListener() {
+    _position = Scrollable.of(context).position;
+    _position?.addListener(_positionListener);
+    _positionListener();
+  }
+
+  void _removeListener() {
+    _position?.removeListener(_positionListener);
+  }
+
+  void _positionListener() {
+    final FlexibleSpaceBarSettings? settings =
+        context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+    bool visible =
+        settings == null || settings.currentExtent <= settings.minExtent;
+    if (_visible != visible) {
+      setState(() {
+        _visible = visible;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Visibility(
+      visible: _visible ?? false,
+      child: widget.child,
+    );
   }
 }
