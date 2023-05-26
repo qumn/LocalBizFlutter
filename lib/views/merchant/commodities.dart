@@ -134,6 +134,7 @@ class _CommodityWithCategoryListState extends State<CommodityWithCategoryList>
                       var commodity = getCommodity(index);
                       return CommodityItem(
                         commodity: commodity,
+                        hideController: _controller,
                       );
                     },
                   )),
@@ -142,7 +143,6 @@ class _CommodityWithCategoryListState extends State<CommodityWithCategoryList>
           Align(
             alignment: Alignment.bottomRight,
             child: ExpandingBottomSheet(
-              hideController: _controller,
               expandingController: _expandingController,
             ),
           )
@@ -189,11 +189,10 @@ class CategoryItem extends StatelessWidget {
 }
 
 class CommodityItem extends StatelessWidget {
-  const CommodityItem({
-    super.key,
-    required this.commodity,
-  });
+  const CommodityItem(
+      {super.key, required this.commodity, required this.hideController});
   final Commodity commodity;
+  final AnimationController hideController;
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +227,7 @@ class CommodityItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(commodity.name, style: titleStyle),
+                Text("${commodity.name} - ${commodity.cid}", style: titleStyle),
                 const SizedBox(
                   height: 10,
                 ),

@@ -20,4 +20,13 @@ class Commodity {
   factory Commodity.fromJson(Map<String, dynamic> json) =>
       _$CommodityFromJson(json);
   Map<String, dynamic> toJson() => _$CommodityToJson(this);
+
+  @override
+  bool operator ==(other) {
+    return other is Commodity && other.cid == cid;
+  }
+
+  @override
+  int get hashCode => cid.hashCode;
+
 }

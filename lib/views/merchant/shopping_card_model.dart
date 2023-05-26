@@ -9,19 +9,16 @@ class ShoppingCartModel extends ChangeNotifier {
   final ShoppingCartMap _map = {};
 
   void add(Commodity commodity) {
-    logger.d("add commodity: $commodity");
     if (_map.containsKey(commodity.cid)) {
       _map[commodity.cid] = (commodity, _map[commodity.cid]!.$2 + 1);
     } else {
       _map[commodity.cid] = (commodity, 1);
     }
     // This call tells the widgets that are listening to this model to rebuild.
-    logger.d("current shopping cart: $_map");
     notifyListeners();
   }
 
   void sub(Commodity commodity) {
-    logger.d("sub commodity: $commodity");
     if (_map.containsKey(commodity.cid)) {
       if (_map[commodity.cid]!.$2 > 1) {
         _map[commodity.cid] = (commodity, _map[commodity.cid]!.$2 - 1);
@@ -44,9 +41,11 @@ class ShoppingCartModel extends ChangeNotifier {
   }
 
   Commodity? getCommodity(int cid) {
-    logger.d("get commodity: $cid");
-    logger.d("current shopping cart: $_map");
     return _map[cid]?.$1;
+  }
+
+  List<Commodity> getCommodities() {
+    return _map.values.map((e) => e.$1).toList();
   }
 
   List<int> getCommodityIds() {

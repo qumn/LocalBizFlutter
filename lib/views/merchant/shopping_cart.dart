@@ -8,11 +8,13 @@ import 'package:local_biz/utils/img_url.dart';
 import 'package:local_biz/views/merchant/shopping_card_model.dart';
 import 'package:provider/provider.dart';
 
+import 'thumbnail_row.dart';
+
 const _maxThumbnailCount = 3;
 const _defaultThumbnailHeight = 40.0;
 const _thumbnailGap = 16.0;
 const _cartIconHeight = 56.0;
-const _mobileCornerRadius = 24.0;
+const _cornerRadius = 24.0;
 const _cartIconWidth = 64.0;
 // These curves define the emphasized easing curve.
 const Cubic _accelerateCurve = Cubic(0.548, 0, 0.757, 0.464);
@@ -32,18 +34,17 @@ double _paddedThumbnailHeight(BuildContext context) {
 class ExpandingBottomSheet extends StatefulWidget {
   const ExpandingBottomSheet({
     super.key,
-    required this.hideController,
     required this.expandingController,
   });
 
-  final AnimationController hideController;
   final AnimationController expandingController;
 
   @override
-  State<ExpandingBottomSheet> createState() => _ExpandingBottomSheetState();
+  State<ExpandingBottomSheet> createState() => ExpandingBottomSheetState();
 }
 
-class _ExpandingBottomSheetState extends State<ExpandingBottomSheet> {
+class ExpandingBottomSheetState extends State<ExpandingBottomSheet> {
+  final _shoppingCartKey = GlobalKey();
   // The width of the Material, calculated by _widthFor() & based on the number
   // of products in the cart. 64.0 is the width when there are 0 products
   // (_kWidthForZeroProducts)
@@ -52,6 +53,7 @@ class _ExpandingBottomSheetState extends State<ExpandingBottomSheet> {
 
   // Controller for the opening and closing of the ExpandingBottomSheet
   AnimationController get _controller => widget.expandingController;
+  bool get _cartIsVisible => _topStartShapeAnimation.value == 0;
 
   // Animations for the opening and closing of the ExpandingBottomSheet
   late Animation<double> _widthAnimation;
@@ -62,7 +64,10 @@ class _ExpandingBottomSheetState extends State<ExpandingBottomSheet> {
   Animation<double> _getWidthAnimation(double screenWidth) {
     if (_controller.status == AnimationStatus.forward) {
       // Opening animation
-      return Tween<double>(begin: _width, end: screenWidth).animate(
+      return Tween<double>(
+        begin: _width,
+        end: screenWidth,
+      ).animate(
         CurvedAnimation(
           parent: _controller.view,
           curve: const Interval(0, 0.3, curve: Curves.fastOutSlowIn),
@@ -82,12 +87,13 @@ class _ExpandingBottomSheetState extends State<ExpandingBottomSheet> {
   }
 
   Animation<double> _getHeightAnimation(double screenHeight) {
+    var maxHeight = screenHeight * 0.4;
     if (_controller.status == AnimationStatus.forward) {
       // Opening animation
       return _getEmphasizedEasingAnimation(
         begin: _height,
-        peak: _getPeakPoint(begin: _height, end: screenHeight),
-        end: screenHeight,
+        peak: _getPeakPoint(begin: _height, end: maxHeight),
+        end: maxHeight,
         isForward: true,
         parent: _controller.view,
       );
@@ -95,7 +101,7 @@ class _ExpandingBottomSheetState extends State<ExpandingBottomSheet> {
       // Closing animation
       return Tween<double>(
         begin: _height,
-        end: screenHeight,
+        end: maxHeight,
       ).animate(
         CurvedAnimation(
           parent: _controller.view,
@@ -109,7 +115,7 @@ class _ExpandingBottomSheetState extends State<ExpandingBottomSheet> {
 
   // Animation of the top-start cut corner. It's cut when closed and not cut when open.
   Animation<double> _getShapeTopStartAnimation(BuildContext context) {
-    const cornerRadius = _mobileCornerRadius;
+    const cornerRadius = _cornerRadius;
 
     if (_controller.status == AnimationStatus.forward) {
       return Tween<double>(begin: cornerRadius, end: 0).animate(
@@ -170,8 +176,80 @@ class _ExpandingBottomSheetState extends State<ExpandingBottomSheet> {
     return max(MediaQuery.of(context).viewPadding.bottom - 16, 0);
   }
 
+  // Returns true if the cart is open or opening and false otherwise.
+  bool get _isOpen {
+    final status = _controller.status;
+    return status == AnimationStatus.completed ||
+        status == AnimationStatus.forward;
+  }
+
+  // Opens the ExpandingBottomSheet if it's closed, otherwise does nothing.
+  void open() {
+    logger.d("ExpandingBottomSheet open");
+    if (!_isOpen) {
+      _controller.forward();
+    }
+  }
+
+  // Closes the ExpandingBottomSheet if it's open or opening, otherwise does nothing.
+  void close() {
+    if (_isOpen) {
+      _controller.reverse();
+    }
+  }
+
+  void toggle(TapDownDetails detail) {
+    // if click outside the cart, close the cart
+    if (_isOpen) {
+      final RenderBox? box =
+          _shoppingCartKey.currentContext?.findRenderObject() as RenderBox?;
+      if (box == null) return;
+
+      final Offset position = box.localToGlobal(Offset.zero);
+      final Size size = box.size;
+
+      logger.d(
+          "position: $position \n size: $size \n detail: ${detail.globalPosition}");
+      // if click outside the cart, close the cart
+      if (detail.globalPosition.dx < position.dx ||
+          detail.globalPosition.dx > position.dx + size.width ||
+          detail.globalPosition.dy < position.dy ||
+          detail.globalPosition.dy > position.dy + size.height) {
+        close();
+      }
+    } else {
+      open();
+    }
+  }
+
+  Widget _buildCart() {
+    return TapRegion(
+      onTapOutside: (d) => close(),
+      onTapInside: (d) => open(),
+      //onTapDown: toggle,
+      child: SizedBox(
+        key: _shoppingCartKey,
+        width: _widthAnimation.value,
+        height: _heightAnimation.value,
+        child: Material(
+          animationDuration: const Duration(milliseconds: 0),
+          shape: BeveledRectangleBorder(
+            borderRadius: BorderRadiusDirectional.only(
+              topStart: Radius.circular(_topStartShapeAnimation.value),
+              bottomStart: Radius.circular(_bottomStartShapeAnimation.value),
+            ),
+          ),
+          child: _cartIsVisible
+              ? const ExpandShoppingCart()
+              : const CollapseShoppingCart(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    var theme = Theme.of(context);
     var shoppingCartModel = Provider.of<ShoppingCartModel>(context);
     var numCommoditis = shoppingCartModel.length();
 
@@ -186,45 +264,64 @@ class _ExpandingBottomSheetState extends State<ExpandingBottomSheet> {
     _topStartShapeAnimation = _getShapeTopStartAnimation(context);
     _bottomStartShapeAnimation = _getShapeBottomStartAnimation(context);
 
-    final Widget child = SizedBox(
-      width: _widthAnimation.value,
-      height: _heightAnimation.value,
-      child: Material(
-        animationDuration: const Duration(milliseconds: 0),
-        shape: BeveledRectangleBorder(
-          borderRadius: BorderRadiusDirectional.only(
-            topStart: Radius.circular(_topStartShapeAnimation.value),
-            bottomStart: Radius.circular(_bottomStartShapeAnimation.value),
-          ),
+    return Material(
+      animationDuration: const Duration(milliseconds: 0),
+      shape: const BeveledRectangleBorder(
+        borderRadius: BorderRadiusDirectional.only(
+          topStart: Radius.circular(20),
         ),
-        elevation: 4,
-        color: Colors.pink[100],
-        child: const ExtensibleShoppingCart(),
+      ),
+      elevation: 4,
+      color: theme.colorScheme.primaryContainer,
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 225),
+        curve: Curves.easeInOut,
+        child: AnimatedBuilder(
+            animation: widget.expandingController,
+            builder: (ctx, child) {
+              return _buildCart();
+            }),
       ),
     );
-
-    return child;
   }
 }
 
-class ExtensibleShoppingCart extends StatefulWidget {
-  const ExtensibleShoppingCart({super.key});
+class ExpandShoppingCart extends StatelessWidget {
+  const ExpandShoppingCart({super.key});
 
   @override
-  State<ExtensibleShoppingCart> createState() => _ExtensibleShoppingCartState();
+  Widget build(BuildContext context) {
+    var theme = Theme.of(context);
+    var shoppingCartModel = Provider.of<ShoppingCartModel>(context);
+    var keys = shoppingCartModel.getCommodityIds();
+
+    return Material(
+        color: theme.colorScheme.primaryContainer,
+        elevation: 4,
+        child: ListView.builder(
+            itemCount: keys.length,
+            itemExtent: 200,
+            itemBuilder: (ctx, idx) {
+              return Text(
+                  shoppingCartModel.getCommodity(keys[idx])?.name ?? "");
+            }));
+  }
 }
 
-class _ExtensibleShoppingCartState extends State<ExtensibleShoppingCart> {
+class CollapseShoppingCart extends StatefulWidget {
+  const CollapseShoppingCart({super.key});
+
+  @override
+  State<CollapseShoppingCart> createState() => _CollapseShoppingCartState();
+}
+
+class _CollapseShoppingCartState extends State<CollapseShoppingCart> {
   final _height = _cartIconHeight;
 
   EdgeInsetsDirectional _horizontalCartPaddingFor(int numCommoditis) {
     return (numCommoditis == 0)
         ? const EdgeInsetsDirectional.only(start: 20, end: 8)
         : const EdgeInsetsDirectional.only(start: 32, end: 8);
-  }
-
-  double get _bottomSafeArea {
-    return max(MediaQuery.of(context).viewPadding.bottom - 16, 0);
   }
 
   @override
@@ -273,112 +370,111 @@ class _ExtensibleShoppingCartState extends State<ExtensibleShoppingCart> {
   }
 }
 
-class CommodityThumbnailRow extends StatefulWidget {
-  const CommodityThumbnailRow({super.key});
-
-  @override
-  State<CommodityThumbnailRow> createState() => _CommodityThumbnailRowState();
-}
-
-class _CommodityThumbnailRowState extends State<CommodityThumbnailRow> {
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-
-  // _list represents what's currently on screen. If _internalList updates,
-  // it will need to be updated to match it.
-  late _ListModel _list;
-
-  // _internalList represents the list as it is updated by the AppStateModel.
-  late List<int> _internalList;
-
-  @override
-  void initState() {
-    super.initState();
-    _list = _ListModel(
-      listKey: _listKey,
-      initialItems: [],
-      removedItemBuilder: _buildRemovedThumbnail,
-    );
-    _internalList = List<int>.from(_list.list);
-  }
-
-  Commodity? _commodityWithId(BuildContext context, int id) {
-    var shoppingCartModel =
-        Provider.of<ShoppingCartModel>(context, listen: false);
-    return shoppingCartModel.getCommodity(id);
-  }
-
-  Widget _buildRemovedThumbnail(
-      int cid, BuildContext context, Animation<double> animation) {
-    logger.d("--------- buildRemovedThumbnail cid = $cid");
-    return ProductThumbnail(
-        animation, animation, _commodityWithId(context, cid)!);
-  }
-
-
-  Widget _buildThumbnail(
-      BuildContext context, int index, Animation<double> animation) {
-    final thumbnailSize = Tween<double>(begin: 0.8, end: 1).animate(
-      CurvedAnimation(
-        curve: const Interval(0.33, 1, curve: Curves.easeIn),
-        parent: animation,
-      ),
-    );
-
-    final Animation<double> opacity = CurvedAnimation(
-      curve: const Interval(0.33, 1, curve: Curves.linear),
-      parent: animation,
-    );
-
-    logger.d(
-        "--------- buildThumbnail index = $index, commodity: ${_list[index]}");
-    var commodity = _commodityWithId(context, _list[index]);
-    return commodity != null
-        ? ProductThumbnail(thumbnailSize, opacity, commodity)
-        : Container();
-  }
-
-  Widget _buildAnimatedList(BuildContext context) {
-    return AnimatedList(
-      key: _listKey,
-      shrinkWrap: true,
-      itemBuilder: _buildThumbnail,
-      initialItemCount: _list.length,
-      scrollDirection: Axis.horizontal,
-      physics: const NeverScrollableScrollPhysics(), // Cart shouldn't scroll
-    );
-  }
-
-  // If the lists are the same length, assume nothing has changed.
-  // If the internalList is shorter than the ListModel, an item has been removed.
-  // If the internalList is longer, then an item has been added.
-  void _updateLists(ShoppingCartModel shoppingCartModel) {
-    // Update _internalList based on the model
-    _internalList = shoppingCartModel.getCommodityIds();
-    final internalSet = Set<int>.from(_internalList);
-    final listSet = Set<int>.from(_list.list);
-
-    final difference = internalSet.difference(listSet);
-    if (difference.isEmpty) {
-      return;
-    }
-
-    for (final product in difference) {
-      if (_internalList.length < _list.length) {
-        _list.remove(product);
-      } else if (_internalList.length > _list.length) {
-        _list.add(product);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var shoppingCartModel = Provider.of<ShoppingCartModel>(context);
-    _updateLists(shoppingCartModel);
-    return _buildAnimatedList(context);
-  }
-}
-
+// class CommodityThumbnailRow extends StatefulWidget {
+//   const CommodityThumbnailRow({super.key});
+//
+//   @override
+//   State<CommodityThumbnailRow> createState() => _CommodityThumbnailRowState();
+// }
+//
+// class _CommodityThumbnailRowState extends State<CommodityThumbnailRow> {
+//   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+//
+//   // _list represents what's currently on screen. If _internalList updates,
+//   // it will need to be updated to match it.
+//   late _ListModel _list;
+//
+//   // _internalList represents the list as it is updated by the AppStateModel.
+//   late List<int> _internalList;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     _list = _ListModel(
+//       listKey: _listKey,
+//       initialItems: [],
+//       removedItemBuilder: _buildRemovedThumbnail,
+//     );
+//     _internalList = List<int>.from(_list.list);
+//   }
+//
+//   Commodity? _commodityWithId(BuildContext context, int id) {
+//     var shoppingCartModel =
+//         Provider.of<ShoppingCartModel>(context, listen: false);
+//     return shoppingCartModel.getCommodity(id);
+//   }
+//
+//   Widget _buildRemovedThumbnail(
+//       int cid, BuildContext context, Animation<double> animation) {
+//     logger.d("--------- buildRemovedThumbnail cid = $cid");
+//     return ProductThumbnail(
+//         animation, animation, _commodityWithId(context, cid)!);
+//   }
+//
+//   Widget _buildThumbnail(
+//       BuildContext context, int index, Animation<double> animation) {
+//     final thumbnailSize = Tween<double>(begin: 0.8, end: 1).animate(
+//       CurvedAnimation(
+//         curve: const Interval(0.33, 1, curve: Curves.easeIn),
+//         parent: animation,
+//       ),
+//     );
+//
+//     final Animation<double> opacity = CurvedAnimation(
+//       curve: const Interval(0.33, 1, curve: Curves.linear),
+//       parent: animation,
+//     );
+//
+//     var commodity = _commodityWithId(context, _list[index]);
+//     logger.d("buildThumbnail: list: ${_list.list} index = $index, commodity: ${commodity?.toJson()}");
+//     return commodity != null
+//         ? ProductThumbnail(thumbnailSize, opacity, commodity)
+//         : Container();
+//   }
+//
+//   Widget _buildAnimatedList(BuildContext context) {
+//     return AnimatedList(
+//       key: _listKey,
+//       shrinkWrap: true,
+//       itemBuilder: _buildThumbnail,
+//       initialItemCount: _list.length,
+//       scrollDirection: Axis.horizontal,
+//       physics: const NeverScrollableScrollPhysics(), // Cart shouldn't scroll
+//     );
+//   }
+//
+//   // If the lists are the same length, assume nothing has changed.
+//   // If the internalList is shorter than the ListModel, an item has been removed.
+//   // If the internalList is longer, then an item has been added.
+//   void _updateLists(ShoppingCartModel shoppingCartModel) {
+//     // Update _internalList based on the model
+//     _internalList = shoppingCartModel.getCommodityIds();
+//     final internalSet = Set<int>.from(_internalList);
+//     final listSet = Set<int>.from(_list.list);
+//
+//     final difference = internalSet.difference(listSet);
+//     logger.e("updateLists: difference = $difference");
+//     if (difference.isEmpty) {
+//       return;
+//     }
+//
+//     for (final cid in difference) {
+//       if (_internalList.length < _list.length) {
+//         _list.remove(cid);
+//       } else if (_internalList.length > _list.length) {
+//         _list.add(cid);
+//       }
+//     }
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     var shoppingCartModel = Provider.of<ShoppingCartModel>(context);
+//     _updateLists(shoppingCartModel);
+//     return _buildAnimatedList(context);
+//   }
+// }
+//
 class ProductThumbnail extends StatelessWidget {
   const ProductThumbnail(this.animation, this.opacityAnimation, this.commodity,
       {super.key});
