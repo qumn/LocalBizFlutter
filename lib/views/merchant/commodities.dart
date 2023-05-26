@@ -11,7 +11,7 @@ import 'shop/shop_scroll_controller.dart';
 import 'shop/shop_scroll_coordinator.dart';
 import 'package:local_biz/api/category.dart' as category_client;
 
-import 'shopping_cart.dart';
+import 'shopping_cart/index.dart';
 
 const commodityItemExtent = 120.0;
 

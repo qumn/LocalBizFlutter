@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:local_biz/log.dart';
 import 'package:local_biz/modal/commodity.dart';
 
 // the key is the commodity id, the value is the commodity and the quantity

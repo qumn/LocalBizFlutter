@@ -1,12 +1,77 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:local_biz/config.dart';
-import 'package:local_biz/log.dart';
 import 'package:local_biz/modal/commodity.dart';
 import 'package:local_biz/utils/img_url.dart';
 import 'package:local_biz/views/merchant/shopping_card_model.dart';
 import 'package:provider/provider.dart';
 
+import 'index.dart';
+
+const _maxThumbnailCount = 3;
+const _thumbnailGap = 16.0;
+const _cartIconHeight = 56.0;
 const _defaultThumbnailHeight = 40.0;
+
+class CollapseShoppingCart extends StatefulWidget {
+  const CollapseShoppingCart({super.key});
+
+  @override
+  State<CollapseShoppingCart> createState() => _CollapseShoppingCartState();
+}
+
+class _CollapseShoppingCartState extends State<CollapseShoppingCart> {
+  final _height = _cartIconHeight;
+
+  EdgeInsetsDirectional _horizontalCartPaddingFor(int numCommoditis) {
+    return (numCommoditis == 0)
+        ? const EdgeInsetsDirectional.only(start: 20, end: 8)
+        : const EdgeInsetsDirectional.only(start: 32, end: 8);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var theme = Theme.of(context);
+    var shoppingCartModel =
+        Provider.of<ShoppingCartModel>(context, listen: true);
+    var numCommoditis = shoppingCartModel.length();
+
+    return Material(
+      animationDuration: const Duration(milliseconds: 0),
+      shape: const BeveledRectangleBorder(
+        borderRadius: BorderRadiusDirectional.only(
+          topStart: Radius.circular(20),
+        ),
+      ),
+      color: theme.colorScheme.primaryContainer,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              AnimatedPadding(
+                padding: _horizontalCartPaddingFor(numCommoditis),
+                duration: const Duration(milliseconds: 225),
+                child: const Icon(Icons.shopping_cart),
+              ),
+              Container(
+                // Accounts for the overflow number
+                width: min(numCommoditis, _maxThumbnailCount) *
+                        paddedThumbnailHeight(context) +
+                    (numCommoditis > 0 ? _thumbnailGap : 0),
+                height: _height,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: const CommodityThumbnailRow(),
+              ),
+              const ExtraProductsNumber(),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
 
 class CommodityThumbnailRow extends StatefulWidget {
   const CommodityThumbnailRow({super.key});
@@ -100,7 +165,6 @@ class ProductThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    logger.d('ProductThumbnail.build: ${commodity.toJson()}');
     return FadeTransition(
       opacity: opacityAnimation,
       child: ScaleTransition(
@@ -122,6 +186,37 @@ class ProductThumbnail extends StatelessWidget {
     );
   }
 }
+
+class ExtraProductsNumber extends StatelessWidget {
+  const ExtraProductsNumber({super.key});
+
+  Widget _buildOverflow(ShoppingCartModel model, BuildContext context) {
+    var theme = Theme.of(context);
+    var textStyle = theme.textTheme.labelLarge!
+        .copyWith(color: theme.colorScheme.onPrimaryContainer);
+
+    if (model.length() <= _maxThumbnailCount) {
+      return Container();
+    }
+
+    final numOverflowProducts = model.length() - _maxThumbnailCount;
+    // Maximum of 99 so padding doesn't get messy.
+    final displayedOverflowProducts =
+        numOverflowProducts <= 99 ? numOverflowProducts : 99;
+    return Text(
+      '+$displayedOverflowProducts',
+      style: textStyle,
+      textScaleFactor: 1.4,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var model = Provider.of<ShoppingCartModel>(context);
+    return _buildOverflow(model, context);
+  }
+}
+
 
 typedef RemovedItemBuilder<T> = Widget Function(
     T item, BuildContext context, Animation<double> animation);
@@ -175,7 +270,6 @@ class ListModel<E> {
 
   void remove(E e) {
     final int index = _items.indexOf(e);
-    logger.d('remove: $e, index: $index');
     if (index != -1) {
       removeAt(index);
     }
