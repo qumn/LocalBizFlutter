@@ -1,8 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:local_biz/log.dart';
-import 'package:local_biz/modal/commodity.dart';
 import 'package:local_biz/views/merchant/shopping_card_model.dart';
 import 'package:provider/provider.dart';
 
@@ -46,7 +44,8 @@ class ExpandingBottomSheetState extends State<ExpandingBottomSheet> {
 
   // Controller for the opening and closing of the ExpandingBottomSheet
   AnimationController get _controller => widget.expandingController;
-  bool get _cartIsVisible => _topStartShapeAnimation.value == 0;
+  bool get _cartIsVisible =>
+      _topStartShapeAnimation.value <= _cornerRadius * _peakVelocityTime;
 
   // Animations for the opening and closing of the ExpandingBottomSheet
   late Animation<double> _widthAnimation;

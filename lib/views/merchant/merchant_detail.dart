@@ -13,7 +13,6 @@ import './page3.dart';
 import './shop/shop_scroll_controller.dart';
 import './shop/shop_scroll_coordinator.dart';
 
-
 class MerchantDetailScreen extends StatefulWidget {
   const MerchantDetailScreen({super.key, required this.merchant});
   final Merchant merchant;
@@ -118,7 +117,6 @@ class _ShopPageState extends State<ShopPage>
     _tabController = TabController(vsync: this, length: 3);
   }
 
-
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
@@ -181,8 +179,7 @@ class _ShopPageState extends State<ShopPage>
                 controller: _tabController,
                 children: <Widget>[
                   CommodityWithCategoryList(
-                      shopCoordinator: _shopCoordinator,
-                      merchant: merchant),
+                      shopCoordinator: _shopCoordinator, merchant: merchant),
                   Page2(shopCoordinator: _shopCoordinator),
                   const Page3(),
                 ],

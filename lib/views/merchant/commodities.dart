@@ -50,11 +50,11 @@ class _CommodityWithCategoryListState extends State<CommodityWithCategoryList>
     _retieveCommodities();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 450),
+      duration: const Duration(milliseconds: 255),
       value: 1,
     );
     _expandingController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 255),
       vsync: this,
     );
     _shopCoordinator = widget.shopCoordinator;

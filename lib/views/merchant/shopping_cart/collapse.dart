@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:local_biz/component/image.dart';
 import 'package:local_biz/config.dart';
 import 'package:local_biz/modal/commodity.dart';
-import 'package:local_biz/utils/img_url.dart';
 import 'package:local_biz/views/merchant/shopping_card_model.dart';
 import 'package:provider/provider.dart';
 
@@ -141,7 +141,8 @@ class _CommodityThumbnailRowState extends State<CommodityThumbnailRow> {
 
     return AnimatedSize(
       duration: const Duration(milliseconds: 225),
-      curve: Curves.easeInOut,
+      curve: const Interval(0.5, 1, curve: Curves.easeInOut),
+      // curve: Curves.easeInOut,
       alignment: AlignmentDirectional.topStart,
       child: AnimatedList(
         scrollDirection: Axis.horizontal,
@@ -172,16 +173,11 @@ class ProductThumbnail extends StatelessWidget {
           child: Container(
             width: _defaultThumbnailHeight,
             height: _defaultThumbnailHeight,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: commodity.img != null
-                    ? NetworkImage(getImgUrl(commodity.img!))
-                    : const AssetImage(defaultCommodityImage) as ImageProvider,
-                fit: BoxFit.cover,
-              ),
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-            ),
             margin: const EdgeInsetsDirectional.only(start: 16),
+            child: LbImage(
+              imgUrl: commodity.img,
+              defaultImage: const AssetImage(defaultCommodityImage),
+            ),
           )),
     );
   }
@@ -216,7 +212,6 @@ class ExtraProductsNumber extends StatelessWidget {
     return _buildOverflow(model, context);
   }
 }
-
 
 typedef RemovedItemBuilder<T> = Widget Function(
     T item, BuildContext context, Animation<double> animation);

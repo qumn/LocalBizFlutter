@@ -1,4 +1,4 @@
-// if image url not start with http://, 
+// if image url not start with http://,
 import 'package:local_biz/config.dart';
 
 String getImgUrl(String url) {
