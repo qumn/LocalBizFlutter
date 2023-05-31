@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:local_biz/root_layout.dart';
 import 'package:local_biz/views/cart/index.dart';
 import 'package:local_biz/views/login.dart';
+import 'package:local_biz/views/setting/index.dart';
 
 import 'views/merchant/merchant.dart';
 
@@ -73,11 +74,6 @@ final appRouter = GoRouter(
         pageBuilder: (context, state) => const MaterialPage<void>(
             key: _pageKey,
             child: RootLayout(
-                key: _scaffoldKey,
-                currentIndex: 2,
-                child: Placeholder(
-                  key: ValueKey("settings"),
-                  color: Colors.red,
-                ))))
+                key: _scaffoldKey, currentIndex: 2, child: SettingScreen()))),
   ],
 );
