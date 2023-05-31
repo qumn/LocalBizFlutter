@@ -5,6 +5,8 @@ import 'package:local_biz/component/image.dart';
 import 'package:local_biz/component/price.dart';
 import 'package:local_biz/config.dart';
 import 'package:local_biz/modal/cart.dart';
+import 'package:local_biz/modal/commodity.dart';
+import 'package:local_biz/modal/specification.dart';
 import 'package:local_biz/views/merchant/commodities.dart';
 import 'package:provider/provider.dart';
 
@@ -39,11 +41,6 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (carts.isEmpty) {
-      return const Center(child: Text("购物车空空如也"));
-    }
-    var cartMap = carts.groupListsBy((c) => c.merchant?.mid ?? 0);
-    var keys = cartMap.keys.toList();
 
     return ChangeNotifierProvider(
       create: (ctx) => ShoppingCartModel(carts),
@@ -52,19 +49,30 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
         children: [
           Expanded(
             flex: 7,
-            child: Container(
-              color: Colors.white,
-              child: ListView.builder(
-                itemCount: cartMap.length,
-                // itemExtent: 200, // the length is not fixed, it's based the merchant's commodities number
-                itemBuilder: (BuildContext context, int idx) {
-                  return MerchantItem(commodities: cartMap[keys[idx]] ?? []);
-                },
-              ),
-            ),
+            child: _merchants(),
           ),
           const Expanded(flex: 1, child: Bottom())
         ],
+      ),
+    );
+  }
+
+  Widget _merchants() {
+    if (carts.isEmpty) {
+      return const Center(child: Text("购物车空空如也"));
+    }
+
+    var cartMap = carts.groupListsBy((c) => c.merchant?.mid ?? 0);
+    var mids = cartMap.keys.toList();
+
+    return Container(
+      color: Colors.white,
+      child: ListView.builder(
+        itemCount: cartMap.length,
+        // itemExtent: 200, // the length is not fixed, it's based the merchant's commodities number
+        itemBuilder: (BuildContext context, int idx) {
+          return MerchantItem(commodities: cartMap[mids[idx]] ?? []);
+        },
       ),
     );
   }
@@ -79,34 +87,33 @@ class MerchantItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
     var shoppingCart = Provider.of<ShoppingCartModel>(context);
     var isAllSelected =
         commodities.every((c) => shoppingCart.isCartSelected(c.carId));
 
+    void onChanged(bool? b) {
+      if (b == true) {
+        shoppingCart.adds(commodities.map((c) => c.carId));
+      } else {
+        shoppingCart.removes(commodities.map((c) => c.carId));
+      }
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Card(
-          child: Column(
-        children: [
-          Row(
-            children: [
-              Checkbox(
-                  value: isAllSelected,
-                  onChanged: (b) {
-                    if (b == true) {
-                      shoppingCart.adds(commodities.map((c) => c.carId));
-                    } else {
-                      shoppingCart.removes(commodities.map((c) => c.carId));
-                    }
-                    // add all cart in the merchant
-                  }),
-              _title(context, merchant.name),
-            ],
-          ),
-          for (var c in commodities) CommodityItem(cart: c),
-        ],
-      )),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Checkbox(value: isAllSelected, onChanged: onChanged),
+                _title(context, merchant.name),
+              ],
+            ),
+            for (var c in commodities) CommodityItem(cart: c),
+          ],
+        ),
+      ),
     );
   }
 
@@ -146,26 +153,9 @@ class CommodityItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
         children: [
-          Checkbox(
-              value: shoppingCart.isCartSelected(cart.carId),
-              onChanged: (b) {
-                if (b == true) {
-                  shoppingCart.add(cart.carId);
-                } else {
-                  shoppingCart.remove(cart.carId);
-                }
-              }),
-          SizedBox(
-            height: 80,
-            width: 80,
-            child: LbImage(
-              imgUrl: commodity.img,
-              defaultImage: const AssetImage(defaultCommodityImage),
-            ),
-          ),
-          const SizedBox(
-            width: 10,
-          ),
+          _checkbox(shoppingCart),
+          _iamge(commodity),
+          const SizedBox(width: 10),
           Expanded(
             flex: 1,
             child: Column(
@@ -174,38 +164,72 @@ class CommodityItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(commodity.name, style: titleStyle),
-                Row(
-                  children: spec.atbs
-                      .map((atb) => Tag("${atb.key}: ${atb.value}"))
-                      .toList(),
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Price(
-                      spec.price,
-                      fontSize: 14,
-                    ),
-                    // Expanded(child: Container()),
-                    SizedBox(
-                      height: 30,
-                      child: Counter(
-                        amount: cart.count,
-                        onAdd: () {
-                          shoppingCart.changeCount(cart.carId, cart.count + 1);
-                        },
-                        onSub: () {
-                          shoppingCart.changeCount(cart.carId, cart.count - 1);
-                        },
-                      ),
-                    )
-                  ],
-                ),
+                _tags(spec),
+                _pricAndCounter(spec, shoppingCart),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Checkbox _checkbox(ShoppingCartModel shoppingCart) {
+    return Checkbox(
+        value: shoppingCart.isCartSelected(cart.carId),
+        onChanged: (b) {
+          if (b == true) {
+            shoppingCart.add(cart.carId);
+          } else {
+            shoppingCart.remove(cart.carId);
+          }
+        });
+  }
+
+  Row _pricAndCounter(Specification spec, ShoppingCartModel shoppingCart) {
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Price(
+          spec.price * cart.count,
+          fontSize: 14,
+        ),
+        // Expanded(child: Container()),
+        _counter(shoppingCart)
+      ],
+    );
+  }
+
+  SizedBox _counter(ShoppingCartModel shoppingCart) {
+    return SizedBox(
+      height: 30,
+      child: Counter(
+        amount: cart.count,
+        onAdd: () {
+          shoppingCart.changeCount(cart.carId, cart.count + 1);
+        },
+        onSub: () {
+          shoppingCart.changeCount(cart.carId, cart.count - 1);
+        },
+      ),
+    );
+  }
+
+  Row _tags(Specification spec) {
+    return Row(
+      children:
+          spec.atbs.map((atb) => Tag("${atb.key}: ${atb.value}")).toList(),
+    );
+  }
+
+  SizedBox _iamge(Commodity commodity) {
+    return SizedBox(
+      height: 80,
+      width: 80,
+      child: LbImage(
+        imgUrl: commodity.img,
+        defaultImage: const AssetImage(defaultCommodityImage),
       ),
     );
   }
@@ -240,46 +264,57 @@ class Bottom extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Checkbox(
-                  value: isAllSelected,
-                  onChanged: (b) => b == true
-                      ? shoppingCart.selectAll()
-                      : shoppingCart.unSelectedAll()),
-              const Text("全选"),
-            ],
-          ),
+          _checkboxAll(isAllSelected, shoppingCart),
           Row(children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text("已选${shoppingCart.selectedCount}件", style: littleStyle),
-                const SizedBox(
-                  width: 10,
-                ),
-                const Text("合计："),
-                Price(
-                  total,
-                  fontSize: 15,
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: colorScheme.secondaryContainer,
-                      textStyle: TextStyle(
-                          fontSize: 16, color: colorScheme.onSecondary)),
-                  onPressed: () {},
-                  child: const Text("结算")),
-            )
+            _totalNumAndPric(shoppingCart, littleStyle, total),
+            const SizedBox(width: 10),
+            _submit(colorScheme)
           ]),
         ],
       ),
+    );
+  }
+
+  Row _checkboxAll(bool isAllSelected, ShoppingCartModel shoppingCart) {
+    return Row(
+      children: [
+        Checkbox(
+            value: isAllSelected,
+            onChanged: (b) => b == true
+                ? shoppingCart.selectAll()
+                : shoppingCart.unSelectedAll()),
+        const Text("全选"),
+      ],
+    );
+  }
+
+  Row _totalNumAndPric(
+      ShoppingCartModel shoppingCart, TextStyle? littleStyle, double total) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Text("已选${shoppingCart.selectedCount}件", style: littleStyle),
+        const SizedBox(
+          width: 10,
+        ),
+        const Text("合计："),
+        Price(
+          total,
+          fontSize: 15,
+        ),
+      ],
+    );
+  }
+
+  Widget _submit(ColorScheme colorScheme) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: colorScheme.secondaryContainer,
+          textStyle: TextStyle(fontSize: 16, color: colorScheme.onSecondary)),
+      onPressed: () {},
+      child: const Text("结算"),
     );
   }
 }
