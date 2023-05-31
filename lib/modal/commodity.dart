@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:local_biz/modal/specification.dart';
 
 import 'category.dart';
 
@@ -14,8 +15,9 @@ class Commodity {
   DateTime? createTime;
   DateTime? updateTime;
   Category? category;
+  List<Specification> specifications;
   //Null? specifications;
-  Commodity({required this.cid, required this.mid, required this.name});
+  Commodity({required this.cid, required this.mid, required this.name, this.specifications = const []});
 
   factory Commodity.fromJson(Map<String, dynamic> json) =>
       _$CommodityFromJson(json);

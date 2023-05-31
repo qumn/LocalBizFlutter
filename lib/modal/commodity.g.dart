@@ -10,6 +10,10 @@ Commodity _$CommodityFromJson(Map<String, dynamic> json) => Commodity(
       cid: json['cid'] as int,
       mid: json['mid'] as int,
       name: json['name'] as String,
+      specifications: (json['specifications'] as List<dynamic>?)
+              ?.map((e) => Specification.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     )
       ..img = json['img'] as String?
       ..desc = json['desc'] as String?
@@ -32,4 +36,5 @@ Map<String, dynamic> _$CommodityToJson(Commodity instance) => <String, dynamic>{
       'createTime': instance.createTime?.toIso8601String(),
       'updateTime': instance.updateTime?.toIso8601String(),
       'category': instance.category,
+      'specifications': instance.specifications,
     };
