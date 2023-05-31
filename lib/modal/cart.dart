@@ -21,7 +21,7 @@ class Cart {
     required this.count,
     required this.status,
   });
-  double carId;
+  int carId;
   Commodity commodity;
   Specification specification;
   int count;

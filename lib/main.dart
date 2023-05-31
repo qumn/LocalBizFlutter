@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'LocalBiz',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrangeAccent),
         useMaterial3: true,
       ),
       routeInformationParser: appRouter.routeInformationParser,

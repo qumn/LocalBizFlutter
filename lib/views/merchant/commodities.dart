@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:local_biz/component/image.dart';
+import 'package:local_biz/component/price.dart';
 import 'package:local_biz/config.dart';
 import 'package:local_biz/modal/category.dart';
 import 'package:local_biz/modal/commodity.dart';
@@ -244,8 +245,6 @@ class CommodityItem extends StatelessWidget {
         fontWeight: FontWeight.w700,
         color: colorScheme.onSurface,
         fontSize: 20);
-    var moneyStyle = theme.textTheme.bodyLarge!
-        .copyWith(fontWeight: FontWeight.w700, color: colorScheme.primary);
 
     return Card(
       color: theme.colorScheme.surface,
@@ -272,7 +271,7 @@ class CommodityItem extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _price(minPrice, moneyStyle),
+                    Price(minPrice),
                     Counter(onAdd: onAdd, onSub: onSub, amount: amount)
                   ],
                 ),
@@ -292,20 +291,6 @@ class CommodityItem extends StatelessWidget {
                 child: Tag(key),
               ))
           .toList(),
-    );
-  }
-
-  Row _price(double price, dynamic moneyStyle) {
-    double fontSize = moneyStyle.fontSize!;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
-      children: [
-        Text("¥", style: moneyStyle),
-        Text(integerPart(price),
-            style: moneyStyle.copyWith(fontSize: fontSize * 1.5)),
-        Text(".${decimalPart(price)}", style: moneyStyle)
-      ],
     );
   }
 }

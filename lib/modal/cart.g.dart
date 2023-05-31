@@ -7,7 +7,7 @@ part of 'cart.dart';
 // **************************************************************************
 
 Cart _$CartFromJson(Map<String, dynamic> json) => Cart(
-      carId: (json['carId'] as num).toDouble(),
+      carId: json['carId'] as int,
       commodity: Commodity.fromJson(json['commodity'] as Map<String, dynamic>),
       specification:
           Specification.fromJson(json['specification'] as Map<String, dynamic>),
