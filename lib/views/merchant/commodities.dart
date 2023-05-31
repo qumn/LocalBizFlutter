@@ -194,10 +194,41 @@ class CommodityItem extends StatelessWidget {
   final Commodity commodity;
   final AnimationController hideController;
 
+  Set<String> getKeys(Commodity commodity) {
+    Set<String> keys = {};
+    for (var spec in commodity.specifications) {
+      keys.addAll(
+          spec.atbs.where((atb) => atb.key != null).map((atb) => atb.key!));
+    }
+    return keys;
+  }
+
+  double getMinPrice(Commodity commodity) {
+    double minPrice = double.infinity;
+    for (var spec in commodity.specifications) {
+      if (spec.price < minPrice) {
+        minPrice = spec.price;
+      }
+    }
+    return minPrice;
+  }
+
+  // get integer part
+  String integerPart(double price) {
+    return price.toStringAsFixed(0);
+  }
+
+  // get decimal part
+  String decimalPart(double price) {
+    return price.toStringAsFixed(2).split('.')[1];
+  }
+
   @override
   Widget build(BuildContext context) {
     var shoppingCartModel = Provider.of<ShoppingCartModel>(context);
     var amount = shoppingCartModel.getQuantity(commodity.cid);
+
+    var minPrice = getMinPrice(commodity);
 
     void onAdd() {
       shoppingCartModel.add(commodity);
@@ -208,8 +239,13 @@ class CommodityItem extends StatelessWidget {
     }
 
     var theme = Theme.of(context);
-    var titleStyle =
-        theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w700);
+    var colorScheme = theme.colorScheme;
+    var titleStyle = theme.textTheme.bodyLarge!.copyWith(
+        fontWeight: FontWeight.w700,
+        color: colorScheme.onSurface,
+        fontSize: 20);
+    var moneyStyle = theme.textTheme.bodyLarge!
+        .copyWith(fontWeight: FontWeight.w700, color: colorScheme.primary);
 
     return Card(
       color: theme.colorScheme.surface,
@@ -227,30 +263,49 @@ class CommodityItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("${commodity.name} - ${commodity.cid}", style: titleStyle),
+                Text(commodity.name, style: titleStyle),
                 const SizedBox(
-                  height: 10,
+                  height: 6,
                 ),
-                Wrap(
-                  children: [
-                    for (int i = 0; i < 3; i++)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 3.0),
-                        child: Tag("Tag $i"),
-                      )
-                  ],
-                ),
+                _tagRow(),
                 Expanded(child: Container()),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("￥4.99"),
+                    _price(minPrice, moneyStyle),
                     Counter(onAdd: onAdd, onSub: onSub, amount: amount)
                   ],
-                )
+                ),
+                const SizedBox(height: 6), // padding to bottom
               ],
             ))
       ]),
+    );
+  }
+
+  Row _tagRow() {
+    return Row(
+      children: getKeys(commodity)
+          .take(4) // max can display 4 tags
+          .map((key) => Padding(
+                padding: const EdgeInsets.only(right: 3.0),
+                child: Tag(key),
+              ))
+          .toList(),
+    );
+  }
+
+  Row _price(double price, dynamic moneyStyle) {
+    double fontSize = moneyStyle.fontSize!;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Text("¥", style: moneyStyle),
+        Text(integerPart(price),
+            style: moneyStyle.copyWith(fontSize: fontSize * 1.5)),
+        Text(".${decimalPart(price)}", style: moneyStyle)
+      ],
     );
   }
 }

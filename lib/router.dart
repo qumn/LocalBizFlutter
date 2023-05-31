@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:local_biz/root_layout.dart';
+import 'package:local_biz/views/cart/index.dart';
 import 'package:local_biz/views/login.dart';
 
 import 'views/merchant/merchant.dart';
@@ -61,16 +62,12 @@ final appRouter = GoRouter(
       ),
     ),
     GoRoute(
-        path: '/shopping_cart',
-        pageBuilder: (context, state) => const MaterialPage<void>(
-            key: _pageKey,
-            child: RootLayout(
-                key: _scaffoldKey,
-                currentIndex: 1,
-                child: Placeholder(
-                  key: ValueKey("shopping_cart"),
-                  color: Colors.green,
-                )))),
+      path: '/shopping_cart',
+      pageBuilder: (context, state) => const MaterialPage<void>(
+          key: _pageKey,
+          child: RootLayout(
+              key: _scaffoldKey, currentIndex: 1, child: ShoppingCartScreen())),
+    ),
     GoRoute(
         path: '/settings',
         pageBuilder: (context, state) => const MaterialPage<void>(
