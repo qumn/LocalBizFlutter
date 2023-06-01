@@ -6,3 +6,4 @@ const defaultPageSize = 10;
 
 const defaultMerchantImage = 'assets/images/merchant.jpeg';
 const defaultCommodityImage = 'assets/images/commodity.png';
+const defaultUserImage = 'assets/images/anonymity.png';
