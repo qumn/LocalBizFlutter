@@ -8,11 +8,15 @@ part of 'cart.dart';
 
 Cart _$CartFromJson(Map<String, dynamic> json) => Cart(
       carId: json['carId'] as int,
-      commodity: Commodity.fromJson(json['commodity'] as Map<String, dynamic>),
-      specification:
-          Specification.fromJson(json['specification'] as Map<String, dynamic>),
       count: json['count'] as int,
       status: $enumDecode(_$CartStatusEnumMap, json['status']),
+      commodity: json['commodity'] == null
+          ? null
+          : Commodity.fromJson(json['commodity'] as Map<String, dynamic>),
+      specification: json['specification'] == null
+          ? null
+          : Specification.fromJson(
+              json['specification'] as Map<String, dynamic>),
     )..merchant = json['merchant'] == null
         ? null
         : Merchant.fromJson(json['merchant'] as Map<String, dynamic>);

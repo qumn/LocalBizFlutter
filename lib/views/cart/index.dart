@@ -34,7 +34,9 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   void _retriveCart() async {
     var newCarts = await cart_client.fetchCarts();
     setState(() {
-      carts = newCarts;
+      carts = newCarts
+          .where((cart) => cart.commodity != null && cart.specification != null)
+          .toList();
       shoppingCartModel.reset(carts);
       _loading = false;
     });
@@ -158,7 +160,7 @@ class CommodityItem extends StatelessWidget {
       child: Row(
         children: [
           _checkbox(shoppingCart),
-          _iamge(commodity),
+          _iamge(commodity!),
           const SizedBox(width: 10),
           Expanded(
             flex: 1,
@@ -168,7 +170,7 @@ class CommodityItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(commodity.name, style: titleStyle),
-                _tags(spec),
+                _tags(spec!),
                 _pricAndCounter(spec, shoppingCart),
               ],
             ),
@@ -256,7 +258,7 @@ class Bottom extends StatelessWidget {
 
     for (var cid in selectedCartIds) {
       var cart = shoppingCart.getById(cid);
-      total += cart.specification.price * cart.count;
+      total += cart.specification!.price * cart.count;
     }
     var isAllSelected = shoppingCart.isAllSelected;
 
@@ -315,7 +317,7 @@ class Bottom extends StatelessWidget {
   void _submit(BuildContext ctx) async {
     var shoppingCart = Provider.of<ShoppingCartModel>(ctx, listen: false);
     var items = shoppingCart.selectedCarts
-        .map((c) => OrderItem(sid: c.specification.sid, count: c.count))
+        .map((c) => OrderItem(sid: c.specification!.sid, count: c.count))
         .toList();
     var order = Order(items: items);
 
@@ -345,6 +347,7 @@ class ShoppingCartModel extends ChangeNotifier {
   Set<Cart> get selectedCarts {
     return cars.where((c) => selectedCartIds.contains(c.carId)).toSet();
   }
+
   bool get isAllSelected => selectedCartIds.length == cars.length;
 
   int get selectedCount {
@@ -355,6 +358,7 @@ class ShoppingCartModel extends ChangeNotifier {
     }
     return count;
   }
+
   void reset(List<Cart> cars) {
     this.cars = cars;
     selectedCartIds = {};

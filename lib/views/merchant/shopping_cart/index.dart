@@ -207,7 +207,7 @@ class ExpandingBottomSheetState extends State<ExpandingBottomSheet> {
             ),
           ),
           child: _cartIsVisible
-              ? const ExpandShoppingCart()
+              ? ExpandShoppingCart(close: close)
               : const CollapseShoppingCart(),
         ),
       ),

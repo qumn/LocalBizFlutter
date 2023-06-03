@@ -16,14 +16,14 @@ enum CartStatus {
 class Cart {
   Cart({
     required this.carId,
-    required this.commodity,
-    required this.specification,
     required this.count,
     required this.status,
+    this.commodity,
+    this.specification,
   });
   int carId;
-  Commodity commodity;
-  Specification specification;
+  Commodity? commodity;
+  Specification? specification;
   int count;
   CartStatus status;
   Merchant? merchant;

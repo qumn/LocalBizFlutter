@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:local_biz/api/cart.dart';
 import 'package:local_biz/component/image.dart';
 import 'package:local_biz/config.dart';
+import 'package:local_biz/log.dart';
 import 'package:local_biz/modal/commodity.dart';
 import 'package:local_biz/views/merchant/commodities.dart';
 import 'package:local_biz/views/merchant/shopping_card_model.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart' as go;
+import 'package:local_biz/api/cart.dart' as cart_clent;
 
 const _itemHeight = 80.0;
 const _floatButtonHeight = 90.0;
 
 class ExpandShoppingCart extends StatelessWidget {
-  const ExpandShoppingCart({super.key});
+  const ExpandShoppingCart({super.key, required this.close});
+  final void Function() close;
 
   @override
   Widget build(BuildContext context) {
@@ -48,17 +53,68 @@ class ExpandShoppingCart extends StatelessWidget {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: ElevatedButton(
-        onPressed: () {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => Commodities(),
-          //   ),
-          // );
-        },
-        child: const SizedBox(
-            height: 60, width: 90, child: Center(child: Text('去结算'))),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          ElevatedButton(
+            onPressed: () async {
+              var theme = Theme.of(context);
+              var carts = shoppingCartModel.getCommodityIds().map((cid) {
+                var commodity = shoppingCartModel.getCommodity(cid);
+                var quantity = shoppingCartModel.getQuantity(cid);
+                return AddCartParam(
+                    mid: commodity!.mid,
+                    cid: cid,
+                    count: quantity,
+                    // TODO: current we only choose the first specification. We should let user choose the specification.
+                    sid: commodity.specifications[0].sid);
+              }).toList();
+              // show loading dialog
+              showDialog(
+                  barrierDismissible: false,
+                  context: context,
+                  builder: (ctx) => Center(
+                          child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(),
+                          Text("正在加入购物车",
+                              style: theme.textTheme.titleMedium!
+                                  .copyWith(color: theme.colorScheme.primary)),
+                        ],
+                      )));
+              try {
+                await cart_clent.addCarts(carts);
+              } catch (e) {
+                logger.d(e);
+              } finally {
+                shoppingCartModel.clear();
+                // close loading dialog
+                Navigator.of(context).pop();
+                // close shopping carts
+                close();
+              }
+            },
+            child: const SizedBox(
+                height: 60, width: 90, child: Center(child: Text("加到购物车"))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorScheme.primary,
+            ),
+            onPressed: () {},
+            child: SizedBox(
+              height: 60,
+              width: 90,
+              child: Center(
+                child: Text('去结算',
+                    style: theme.textTheme.titleLarge!
+                        .copyWith(color: colorScheme.onPrimary)),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
