@@ -9,6 +9,10 @@ class PageParam {
   const PageParam({this.num = 1, this.size = 10});
 }
 
+Future<Response<T>> delete<T>(String path, [Object? data]) async {
+  return await dio.delete(path, data: data);
+}
+
 Future<Response<T>> get<T>(String path,
     {PageParam? page, Map<String, dynamic>? param}) async {
   param ??= {};
@@ -17,6 +21,10 @@ Future<Response<T>> get<T>(String path,
     param['pageSize'] = page.size;
   }
   return await dio.get(path, queryParameters: param);
+}
+
+Future<Response<T>> post<T>(String path, Object? data) async {
+  return await dio.post(path, data: data);
 }
 
 final dio = Dio(

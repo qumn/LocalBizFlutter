@@ -1,6 +1,4 @@
-
 import './index.dart';
-import 'package:local_biz/log.dart';
 
 Future<String?> login(
     String usename, String password) async {

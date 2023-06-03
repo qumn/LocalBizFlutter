@@ -1,11 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:local_biz/api/cart.dart' as cart_client;
+import 'package:local_biz/api/order.dart' as order_client;
 import 'package:local_biz/component/image.dart';
 import 'package:local_biz/component/price.dart';
 import 'package:local_biz/config.dart';
 import 'package:local_biz/modal/cart.dart';
 import 'package:local_biz/modal/commodity.dart';
+import 'package:local_biz/modal/order.dart';
 import 'package:local_biz/modal/specification.dart';
 import 'package:local_biz/views/merchant/commodities.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +23,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   bool _loading = true;
   late List<Cart> carts;
   Set<int> selectedCartIds = {};
+  final shoppingCartModel = ShoppingCartModel([]);
 
   @override
   void initState() {
@@ -32,6 +35,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
     var newCarts = await cart_client.fetchCarts();
     setState(() {
       carts = newCarts;
+      shoppingCartModel.reset(carts);
       _loading = false;
     });
   }
@@ -43,7 +47,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
     }
 
     return ChangeNotifierProvider(
-      create: (ctx) => ShoppingCartModel(carts),
+      create: (ctx) => shoppingCartModel,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -51,7 +55,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
             flex: 7,
             child: _merchants(),
           ),
-          const Expanded(flex: 1, child: Bottom())
+          Expanded(flex: 1, child: Bottom(refresh: _retriveCart)),
         ],
       ),
     );
@@ -236,7 +240,8 @@ class CommodityItem extends StatelessWidget {
 }
 
 class Bottom extends StatelessWidget {
-  const Bottom({super.key});
+  const Bottom({super.key, required this.refresh});
+  final void Function() refresh;
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +273,7 @@ class Bottom extends StatelessWidget {
           Row(children: [
             _totalNumAndPric(shoppingCart, littleStyle, total),
             const SizedBox(width: 10),
-            _submit(colorScheme)
+            _submitButton(context, colorScheme)
           ]),
         ],
       ),
@@ -307,13 +312,26 @@ class Bottom extends StatelessWidget {
     );
   }
 
-  Widget _submit(ColorScheme colorScheme) {
+  void _submit(BuildContext ctx) async {
+    var shoppingCart = Provider.of<ShoppingCartModel>(ctx, listen: false);
+    var items = shoppingCart.selectedCarts
+        .map((c) => OrderItem(sid: c.specification.sid, count: c.count))
+        .toList();
+    var order = Order(items: items);
+
+    await order_client.postOrder(order);
+    // delete item
+    await cart_client.delteCarts(shoppingCart.selectedCartIds);
+    refresh(); // refresh page
+  }
+
+  Widget _submitButton(BuildContext ctx, ColorScheme colorScheme) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
           elevation: 0,
           backgroundColor: colorScheme.secondaryContainer,
           textStyle: TextStyle(fontSize: 16, color: colorScheme.onSecondary)),
-      onPressed: () {},
+      onPressed: () => _submit(ctx),
       child: const Text("结算"),
     );
   }
@@ -324,7 +342,9 @@ class ShoppingCartModel extends ChangeNotifier {
   List<Cart> cars;
   Set<int> selectedCartIds = {};
 
-  Set<int> get selectedCarts => selectedCartIds;
+  Set<Cart> get selectedCarts {
+    return cars.where((c) => selectedCartIds.contains(c.carId)).toSet();
+  }
   bool get isAllSelected => selectedCartIds.length == cars.length;
 
   int get selectedCount {
@@ -334,6 +354,11 @@ class ShoppingCartModel extends ChangeNotifier {
       count += cart.count;
     }
     return count;
+  }
+  void reset(List<Cart> cars) {
+    this.cars = cars;
+    selectedCartIds = {};
+    notifyListeners();
   }
 
   void selectAll() {
@@ -378,6 +403,10 @@ class ShoppingCartModel extends ChangeNotifier {
       selectedCartIds.remove(cid);
     }
     notifyListeners();
+  }
+
+  void submit() {
+    // send purchase request
   }
 
   bool isCartSelected(int cid) {
