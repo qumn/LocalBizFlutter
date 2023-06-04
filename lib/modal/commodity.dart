@@ -17,7 +17,13 @@ class Commodity {
   Category? category;
   List<Specification> specifications;
   //Null? specifications;
-  Commodity({required this.cid, required this.mid, required this.name, this.specifications = const []});
+  Commodity(
+      {required this.cid,
+      required this.mid,
+      required this.name,
+      this.img,
+      this.desc,
+      this.specifications = const []});
 
   factory Commodity.fromJson(Map<String, dynamic> json) =>
       _$CommodityFromJson(json);
@@ -30,5 +36,4 @@ class Commodity {
 
   @override
   int get hashCode => cid.hashCode;
-
 }

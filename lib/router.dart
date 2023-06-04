@@ -4,6 +4,7 @@ import 'package:local_biz/root_layout.dart';
 import 'package:local_biz/views/cart/index.dart';
 import 'package:local_biz/views/login.dart';
 import 'package:local_biz/views/setting/index.dart';
+import 'package:local_biz/views/settlement/index.dart';
 
 import 'views/merchant/merchant.dart';
 
@@ -75,5 +76,12 @@ final appRouter = GoRouter(
             key: _pageKey,
             child: RootLayout(
                 key: _scaffoldKey, currentIndex: 2, child: SettingScreen()))),
+    GoRoute(
+        path: '/settlement',
+        pageBuilder: (context, state) {
+          var shoppingCartModel = state.extra as ShoppingCartModel;
+          return MaterialPage<void>(
+              key: _pageKey, child: SettelMentScreen(shoppingCartModel));
+        }),
   ],
 );

@@ -266,15 +266,16 @@ class CommodityItem extends StatelessWidget {
                 const SizedBox(
                   height: 6,
                 ),
-                _tagRow(),
+                if (commodity.specifications.isNotEmpty) _tagRow(),
                 Expanded(child: Container()),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Price(minPrice),
-                    Counter(onAdd: onAdd, onSub: onSub, amount: amount)
-                  ],
-                ),
+                if (commodity.specifications.isNotEmpty)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Price(minPrice),
+                      Counter(onAdd: onAdd, onSub: onSub, amount: amount)
+                    ],
+                  ),
                 const SizedBox(height: 6), // padding to bottom
               ],
             ))

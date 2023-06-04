@@ -11,6 +11,7 @@ import 'package:local_biz/modal/order.dart';
 import 'package:local_biz/modal/specification.dart';
 import 'package:local_biz/views/merchant/commodities.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart' as go;
 
 class ShoppingCartScreen extends StatefulWidget {
   const ShoppingCartScreen({super.key});
@@ -222,10 +223,18 @@ class CommodityItem extends StatelessWidget {
     );
   }
 
-  Row _tags(Specification spec) {
-    return Row(
-      children:
-          spec.atbs.map((atb) => Tag("${atb.key}: ${atb.value}")).toList(),
+  Widget _tags(Specification spec) {
+    return SizedBox(
+      height: 20,
+      child: ListView(
+        // shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        children:
+            spec.atbs.map((atb) => Padding(
+              padding: const EdgeInsets.only(right: 3.0),
+              child: Tag("${atb.key}: ${atb.value}"),
+            )).toList(),
+      ),
     );
   }
 
@@ -316,15 +325,7 @@ class Bottom extends StatelessWidget {
 
   void _submit(BuildContext ctx) async {
     var shoppingCart = Provider.of<ShoppingCartModel>(ctx, listen: false);
-    var items = shoppingCart.selectedCarts
-        .map((c) => OrderItem(sid: c.specification!.sid, count: c.count))
-        .toList();
-    var order = Order(items: items);
-
-    await order_client.postOrder(order);
-    // delete item
-    await cart_client.delteCarts(shoppingCart.selectedCartIds);
-    refresh(); // refresh page
+    go.GoRouter.of(ctx).go("/settlement", extra: shoppingCart);
   }
 
   Widget _submitButton(BuildContext ctx, ColorScheme colorScheme) {
