@@ -41,6 +41,8 @@ class Order {
   int totalAmount;
   Merchant? merchant;
   OrderStatus? status;
+  DateTime? createTime;
+  DateTime? updateTime;
   List<OrderItem> items;
 
   Order(
@@ -50,6 +52,8 @@ class Order {
       required this.totalAmount,
       this.merchant,
       this.status,
+      this.updateTime,
+      this.createTime,
       this.items = const []});
   factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);
   Map<String, dynamic> toJson() => _$OrderToJson(this);

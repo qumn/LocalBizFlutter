@@ -41,6 +41,12 @@ Order _$OrderFromJson(Map<String, dynamic> json) => Order(
           ? null
           : Merchant.fromJson(json['merchant'] as Map<String, dynamic>),
       status: $enumDecodeNullable(_$OrderStatusEnumMap, json['status']),
+      updateTime: json['updateTime'] == null
+          ? null
+          : DateTime.parse(json['updateTime'] as String),
+      createTime: json['createTime'] == null
+          ? null
+          : DateTime.parse(json['createTime'] as String),
       items: (json['items'] as List<dynamic>?)
               ?.map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -54,6 +60,8 @@ Map<String, dynamic> _$OrderToJson(Order instance) => <String, dynamic>{
       'totalAmount': instance.totalAmount,
       'merchant': instance.merchant,
       'status': _$OrderStatusEnumMap[instance.status],
+      'createTime': instance.createTime?.toIso8601String(),
+      'updateTime': instance.updateTime?.toIso8601String(),
       'items': instance.items,
     };
 

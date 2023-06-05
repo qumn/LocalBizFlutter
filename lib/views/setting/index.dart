@@ -38,6 +38,11 @@ class _SettingScreenState extends State<SettingScreen> {
   void _getOrders() {
     fetchOrders().then((value) {
       setState(() {
+        // value sort by createTime
+        value.sort((a, b){
+          if(a.createTime == null || b.createTime == null) return 0;
+          return b.createTime!.compareTo(a.createTime!);
+        });
         orders = value;
         isLoading = false;
       });

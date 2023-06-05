@@ -37,7 +37,11 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
     setState(() {
       carts = newCarts
           .where((cart) => cart.commodity != null && cart.specification != null)
-          .toList();
+          // sort by createTime
+          .sorted((a, b) {
+        if (a.createTime == null || b.createTime == null) return 0;
+        return b.createTime!.compareTo(a.createTime!);
+      }).toList();
       shoppingCartModel.reset(carts);
       _loading = false;
     });
@@ -229,11 +233,12 @@ class CommodityItem extends StatelessWidget {
       child: ListView(
         // shrinkWrap: true,
         scrollDirection: Axis.horizontal,
-        children:
-            spec.atbs.map((atb) => Padding(
-              padding: const EdgeInsets.only(right: 3.0),
-              child: Tag("${atb.key}: ${atb.value}"),
-            )).toList(),
+        children: spec.atbs
+            .map((atb) => Padding(
+                  padding: const EdgeInsets.only(right: 3.0),
+                  child: Tag("${atb.key}: ${atb.value}"),
+                ))
+            .toList(),
       ),
     );
   }

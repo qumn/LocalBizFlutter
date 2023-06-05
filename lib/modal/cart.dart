@@ -20,6 +20,9 @@ class Cart {
     required this.status,
     this.commodity,
     this.specification,
+    this.merchant,
+    this.createTime,
+    this.updateTime
   });
   int carId;
   Commodity? commodity;
@@ -27,6 +30,8 @@ class Cart {
   int count;
   CartStatus status;
   Merchant? merchant;
+  DateTime? createTime;
+  DateTime? updateTime;
 
   factory Cart.fromJson(Map<String, dynamic> json) => _$CartFromJson(json);
   Map<String, dynamic> toJson() => _$CartToJson(this);
