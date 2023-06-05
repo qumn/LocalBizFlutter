@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:local_biz/api/order.dart';
 import 'package:local_biz/api/user.dart';
+import 'package:local_biz/component/image.dart';
 import 'package:local_biz/config.dart';
+import 'package:local_biz/log.dart';
+import 'package:local_biz/modal/order.dart';
 import 'package:local_biz/utils/img_url.dart';
 
 import '../../modal/user.dart';
@@ -14,10 +18,13 @@ class SettingScreen extends StatefulWidget {
 
 class _SettingScreenState extends State<SettingScreen> {
   User? user;
+  List<Order> orders = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     _retrieve();
+    _getOrders();
     super.initState();
   }
 
@@ -25,6 +32,15 @@ class _SettingScreenState extends State<SettingScreen> {
     var user = await getUser();
     setState(() {
       this.user = user!;
+    });
+  }
+
+  void _getOrders() {
+    fetchOrders().then((value) {
+      setState(() {
+        orders = value;
+        isLoading = false;
+      });
     });
   }
 
@@ -39,7 +55,7 @@ class _SettingScreenState extends State<SettingScreen> {
         children: [
           Expanded(flex: 1, child: _userProfile()),
           Expanded(flex: 1, child: _overview(context)),
-          Expanded(flex: 5, child: _orderList())
+          Expanded(flex: 5, child: _body())
         ],
       ),
     );
@@ -53,10 +69,6 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   Widget _userProfile() {
-    // if use not be retrieved, show loading
-    if (user == null) {
-      return const CircularProgressIndicator();
-    }
     var theme = Theme.of(context);
     var colorScheme = theme.colorScheme;
     var nameStyle = theme.textTheme.titleMedium?.copyWith(
@@ -128,7 +140,84 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
+  Widget _orderItem(Order order) {
+    var merchant = order.merchant;
+    if (merchant == null) {
+      return const SizedBox();
+    }
+    var theme = Theme.of(context);
+    var colorScheme = theme.colorScheme;
+    var titleStyle = theme.textTheme.titleMedium?.copyWith(
+      fontWeight: FontWeight.w600,
+      color: colorScheme.onPrimaryContainer,
+    );
+    var subtitleStyle = theme.textTheme.titleMedium?.copyWith(
+      fontWeight: FontWeight.w200,
+      color: colorScheme.onPrimaryContainer,
+    );
+
+    return Card(
+      child: Container(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(merchant.name, style: titleStyle),
+            SizedBox(
+              height: 140,
+              child: ListView(
+                shrinkWrap: true,
+                scrollDirection: Axis.horizontal,
+                children: order.items
+                    .where((item) => item.commodity != null)
+                    .map((o) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 90,
+                          width: 90,
+                          child: LbImage(
+                            imgUrl: o.commodity?.img,
+                            defaultImage:
+                                const AssetImage(defaultCommodityImage),
+                          ),
+                        ),
+                        const SizedBox(height: 6,),
+                        Text(o.commodity?.name ?? "", style: subtitleStyle),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _orderList() {
+    if (isLoading) {
+      return const CircularProgressIndicator();
+    }
+    if (orders.isEmpty) {
+      return const Text("暂无订单");
+    }
+
+    return ListView.builder(
+      itemCount: orders.length,
+      // itemBuilder: (ctx, idx) => Container(
+      //   width: 100,
+      //   height: 100,
+      //   color: Colors.red,
+      // ),
+      //
+      itemBuilder: (ctx, idx) => _orderItem(orders[idx]),
+    );
+  }
+
+  Widget _body() {
     var theme = Theme.of(context);
     var titleStyle = theme.textTheme.titleMedium?.copyWith(
       fontWeight: FontWeight.w600,
@@ -145,8 +234,7 @@ class _SettingScreenState extends State<SettingScreen> {
             size: titleStyle!.fontSize,
           ),
         ]),
-        const Expanded(
-            flex: 1, child: Center(child: CircularProgressIndicator())),
+        Expanded(flex: 1, child: Center(child: _orderList())),
       ]),
     );
   }

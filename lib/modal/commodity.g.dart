@@ -10,13 +10,13 @@ Commodity _$CommodityFromJson(Map<String, dynamic> json) => Commodity(
       cid: json['cid'] as int,
       mid: json['mid'] as int,
       name: json['name'] as String,
+      img: json['img'] as String?,
+      desc: json['desc'] as String?,
       specifications: (json['specifications'] as List<dynamic>?)
               ?.map((e) => Specification.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
     )
-      ..img = json['img'] as String?
-      ..desc = json['desc'] as String?
       ..createTime = json['createTime'] == null
           ? null
           : DateTime.parse(json['createTime'] as String)

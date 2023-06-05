@@ -246,9 +246,9 @@ class _SettelMentState extends State<SettelMentScreen> {
     var theme = Theme.of(context);
     var shoppingCart = widget.shoppingCartModel;
     var items = shoppingCart.selectedCarts
-        .map((c) => OrderItem(sid: c.specification!.sid, count: c.count))
+        .map((c) => OrderItemCreateParam(sid: c.specification!.sid, count: c.count))
         .toList();
-    var order = Order(items: items);
+    var order = OrderCreateParam(items: items);
     showDialog(
         barrierDismissible: false,
         context: context,
