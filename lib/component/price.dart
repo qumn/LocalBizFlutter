@@ -24,13 +24,20 @@ class Price extends StatelessWidget {
         fontSize: fontSize);
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
         Text("¥", style: moneyStyle),
-        Text(integerPart(price),
-            style: moneyStyle.copyWith(fontSize: fontSize * 1.5)),
-        Text(".${decimalPart(price)}", style: moneyStyle)
+        Text(
+          integerPart(price),
+          style: moneyStyle.copyWith(fontSize: fontSize * 1.5),
+        ),
+        Text(
+          ".${decimalPart(price)}",
+          style: moneyStyle,
+        )
       ],
     );
   }

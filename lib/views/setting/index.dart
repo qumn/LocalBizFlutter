@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:local_biz/api/order.dart';
 import 'package:local_biz/api/user.dart';
 import 'package:local_biz/component/image.dart';
+import 'package:local_biz/component/price.dart';
 import 'package:local_biz/config.dart';
 import 'package:local_biz/log.dart';
 import 'package:local_biz/modal/order.dart';
@@ -39,8 +41,8 @@ class _SettingScreenState extends State<SettingScreen> {
     fetchOrders().then((value) {
       setState(() {
         // value sort by createTime
-        value.sort((a, b){
-          if(a.createTime == null || b.createTime == null) return 0;
+        value.sort((a, b) {
+          if (a.createTime == null || b.createTime == null) return 0;
           return b.createTime!.compareTo(a.createTime!);
         });
         orders = value;
@@ -157,8 +159,69 @@ class _SettingScreenState extends State<SettingScreen> {
       color: colorScheme.onPrimaryContainer,
     );
     var subtitleStyle = theme.textTheme.titleMedium?.copyWith(
-      fontWeight: FontWeight.w200,
+      // fontWeight: FontWeight.w200,
       color: colorScheme.onPrimaryContainer,
+    );
+    var totalPrice = order.items.fold(0.0, (previousValue, item) {
+      return previousValue + (item.specification?.price ?? 0) * item.count;
+    });
+    String dateFormat(DateTime time) {
+      var dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+      if (time.isAfter(DateTime.now().subtract(const Duration(days: 1)))) {
+        return '${time.hour}:${time.minute}:${time.second}';
+      }
+      return dateFormat.format(time);
+    }
+
+    var totalPriceWidget = ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 90, minHeight: 140),
+      child: Container(
+          color: colorScheme.errorContainer.withOpacity(0.4),
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Price(
+                  totalPrice,
+                  fontSize: 12,
+                ),
+                Text('共${order.items.length}件', style: subtitleStyle)
+              ])),
+    );
+
+    var orderItemList = Stack(
+      children: [
+        ListView(
+          shrinkWrap: true,
+          scrollDirection: Axis.horizontal,
+          children:
+              order.items.where((item) => item.commodity != null).map((o) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 90,
+                    width: 90,
+                    child: LbImage(
+                      imgUrl: o.commodity?.img,
+                      defaultImage: const AssetImage(defaultCommodityImage),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 6,
+                  ),
+                  Text(o.commodity?.name ?? "", style: subtitleStyle),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+        Align(
+          alignment: Alignment.topRight,
+          child: totalPriceWidget,
+        )
+      ],
     );
 
     return Card(
@@ -166,36 +229,40 @@ class _SettingScreenState extends State<SettingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(merchant.name, style: titleStyle),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(merchant.name, style: titleStyle),
+                      const Icon(Icons.arrow_forward_ios, size: 12)
+                    ],
+                  ),
+                  // if (order.createTime != null)
+                  //   Padding(
+                  //     padding: const EdgeInsets.only(right: 6),
+                  //     child: Text(dateFormat(order.createTime!), style: subtitleStyle),
+                  //   ),
+                ],
+              ),
+            ),
             SizedBox(
               height: 140,
-              child: ListView(
-                shrinkWrap: true,
-                scrollDirection: Axis.horizontal,
-                children: order.items
-                    .where((item) => item.commodity != null)
-                    .map((o) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 90,
-                          width: 90,
-                          child: LbImage(
-                            imgUrl: o.commodity?.img,
-                            defaultImage:
-                                const AssetImage(defaultCommodityImage),
-                          ),
-                        ),
-                        const SizedBox(height: 6,),
-                        Text(o.commodity?.name ?? "", style: subtitleStyle),
-                      ],
-                    ),
-                  );
-                }).toList(),
+              child: orderItemList,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4, right: 4, left: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('更多', style: subtitleStyle),
+                  // a button again 
+                  TextButton(onPressed: (){}, child: const Text('再来一单'),),
+                ],
               ),
-            )
+            ),
           ],
         ),
       ),
