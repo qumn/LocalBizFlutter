@@ -5,9 +5,8 @@ import 'package:local_biz/component/image.dart';
 import 'package:local_biz/config.dart';
 import 'package:local_biz/modal/merchant.dart';
 import 'package:go_router/go_router.dart' as go;
-import 'package:local_biz/utils/img_url.dart';
 import './merchant_detail.dart';
-import 'package:local_biz/api/merchant.dart' as merchantApi;
+import 'package:local_biz/api/merchant.dart' as merchant_client;
 
 class MerchantScreen extends StatefulWidget {
   const MerchantScreen({super.key});
@@ -26,7 +25,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
   }
 
   void _retrieve() async {
-    var merchants = await merchantApi.fetchAll(
+    var merchants = await merchant_client.fetchAll(
         page: PageParam(
             num: (_merchants.length ~/ defaultPageSize) + 1,
             size: defaultPageSize));

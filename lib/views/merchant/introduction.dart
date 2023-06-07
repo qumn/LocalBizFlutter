@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'shop/shop_scroll_controller.dart';
 import 'shop/shop_scroll_coordinator.dart';
 
-class Page3 extends StatefulWidget {
-  const Page3({super.key});
+class Introduction extends StatefulWidget {
+  const Introduction({super.key});
 
   @override
-  _Page3State createState() => _Page3State();
+  _IntroductionState createState() => _IntroductionState();
 }
 
-class _Page3State extends State<Page3> {
+class _IntroductionState extends State<Introduction> {
   @override
   Widget build(BuildContext context) {
     return Center(

@@ -8,8 +8,8 @@ import 'package:local_biz/modal/merchant.dart';
 import 'package:local_biz/utils/img_url.dart';
 
 import './commodities.dart';
-import './page2.dart';
-import './page3.dart';
+import './comments.dart';
+import './introduction.dart';
 import './shop/shop_scroll_controller.dart';
 import './shop/shop_scroll_coordinator.dart';
 
@@ -180,8 +180,8 @@ class _ShopPageState extends State<ShopPage>
                 children: <Widget>[
                   CommodityWithCategoryList(
                       shopCoordinator: _shopCoordinator, merchant: merchant),
-                  Page2(shopCoordinator: _shopCoordinator),
-                  const Page3(),
+                  Comments(shopCoordinator: _shopCoordinator),
+                  const Introduction(),
                 ],
               ),
             )
