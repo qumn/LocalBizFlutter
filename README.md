@@ -1,17 +1,22 @@
-# local_biz
+# LocalBiz
+`LocalBiz` 的是 Local Business 的缩写, 含义为着附近的商业.  
+此项目的目标为让用户可以足不出户的体检附件的商业服务  
 
-A new Flutter project.
+## 项目演示
+演示视频: 
+<video autoplay width="80%">
+  <source src="./img/flutter_demo.mp4" type="video/mp4">
+</video>
 
-## Getting Started
+## 第三方库
+1. provider: 状态管理
+2. json_annotation: JSON序列化与反序列化
+3. dio: 发送HTTP请求
+4. shared_preferences: 数据持久化
+5. go_router: 路由
+6. animations: 动画
+7. logger: 日志
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# LocalBizFlutter
+## 运行项目
+1. 安装 **Flutter** 运行环境 参考[**官网**](https://docs.flutter.dev/get-started/install)
+2. 运行项目 `flutter run`
