@@ -8,6 +8,9 @@
   <source src="./img/flutter_demo.mp4" type="video/mp4">
 </video>
 
+
+https://github.com/qumn/LocalBizFlutter/assets/62603356/4f88f02b-3e56-4e33-b50c-72705d4a1ad6
+
 ## 第三方库
 1. provider: 状态管理
 2. json_annotation: JSON序列化与反序列化
